@@ -150,7 +150,11 @@ const FOOTER_HTML = `
     </div>
   </div>
   <div class="footer-bottom">
-    <p>&copy; ${new Date().getFullYear()} Rinky Jewellers, Kanpur. All rights reserved.</p>
+    <p class="footer-credit">
+      &copy; ${new Date().getFullYear()} Rinky Jewellers. All Rights Reserved. |
+      Designed &amp; Developed by
+      <a href="mailto:agarwallakshya172@gmail.com">Lakshya Agarwal</a>
+    </p>
     <p class="footer-tagline">✦ Elegance You Can Wear ✦</p>
   </div>
 </footer>

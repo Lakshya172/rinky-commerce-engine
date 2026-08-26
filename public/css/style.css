@@ -271,11 +271,6 @@ em {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform var(--t);
-}
-
-.nav-brand:hover .brand-logo-wrap {
-  transform: scale(1.08) rotate(-2deg);
 }
 
 .brand-logo-img {
@@ -2087,6 +2082,16 @@ tbody tr:hover td {
   letter-spacing: .04em;
   max-width: 1260px;
   margin: 0 auto;
+}
+
+.footer-credit a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: opacity var(--t);
+}
+
+.footer-credit a:hover {
+  text-decoration: underline;
 }
 
 .footer-tagline {
