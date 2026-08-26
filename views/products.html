@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collection – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Crafted with Love</p>
+    <h1>Our Collection</h1>
+    <span class="ornament" style="display:block;margin-top:10px">✦ ✦ ✦</span>
+  </div>
+</section>
+
+<section class="products-section">
+  <div class="container">
+
+    <!-- Search -->
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Search necklaces, rings, bangles..." autocomplete="off" />
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-chip active" data-cat="">All</button>
+      <button class="filter-chip" data-cat="Necklaces">📿 Necklaces</button>
+      <button class="filter-chip" data-cat="Rings">💍 Rings</button>
+      <button class="filter-chip" data-cat="Earrings">✨ Earrings</button>
+      <button class="filter-chip" data-cat="Bangles">🌟 Bangles</button>
+    </div>
+
+    <p id="results-count" class="results-count"></p>
+
+    <div class="products-grid" id="productGrid">
+      <!-- skeleton -->
+      <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line skeleton w40"></div><div class="skel-line skeleton w80" style="height:18px;margin-top:8px"></div><div class="skel-line skeleton w60"></div><div class="skel-line skeleton w80" style="height:36px;border-radius:6px;margin-top:14px"></div></div></div>
+      <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line skeleton w40"></div><div class="skel-line skeleton w80" style="height:18px;margin-top:8px"></div><div class="skel-line skeleton w60"></div><div class="skel-line skeleton w80" style="height:36px;border-radius:6px;margin-top:14px"></div></div></div>
+      <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line skeleton w40"></div><div class="skel-line skeleton w80" style="height:18px;margin-top:8px"></div><div class="skel-line skeleton w60"></div><div class="skel-line skeleton w80" style="height:36px;border-radius:6px;margin-top:14px"></div></div></div>
+      <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line skeleton w40"></div><div class="skel-line skeleton w80" style="height:18px;margin-top:8px"></div><div class="skel-line skeleton w60"></div><div class="skel-line skeleton w80" style="height:36px;border-radius:6px;margin-top:14px"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+let allProducts = [];
+let wishlist    = [];
+let currentCat  = '';
+let searchTerm  = '';
+
+// Pre-select from URL
+const urlCat = new URLSearchParams(window.location.search).get('category') || '';
+currentCat = urlCat;
+
+(async () => {
+  // Wishlist
+  const state = await getAuthState();
+  if (state.loggedIn) {
+    try {
+      const wr = await fetch('/api/wishlist');
+      const wd = await wr.json();
+      wishlist = (wd.wishlist || []).map(w => w._id || w);
+    } catch {}
+  }
+
+  // Products
+  const res  = await fetch('/api/products');
+  const data = await res.json();
+  allProducts = data.products || [];
+
+  // Generate category filter chips dynamically
+  const defaultCats = ['Necklaces', 'Rings', 'Earrings', 'Bangles'];
+  const productCats = allProducts.map(p => p.category);
+  const categories = [...new Set([...defaultCats, ...productCats])].filter(Boolean);
+  
+  const filterBar = document.getElementById('filterBar');
+  if (filterBar) {
+    filterBar.innerHTML = `<button class="filter-chip active" data-cat="">All</button>` +
+      categories.map(cat => {
+        let icon = '💎';
+        if (cat === 'Necklaces') icon = '📿';
+        else if (cat === 'Rings') icon = '💍';
+        else if (cat === 'Earrings') icon = '✨';
+        else if (cat === 'Bangles') icon = '🌟';
+        return `<button class="filter-chip" data-cat="${cat}">${icon} ${cat}</button>`;
+      }).join('');
+  }
+
+  // Set active filter
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.cat === currentCat);
+  });
+
+  render();
+})();
+
+function render() {
+  const grid  = document.getElementById('productGrid');
+  const count = document.getElementById('results-count');
+  let filtered = allProducts;
+  if (currentCat) filtered = filtered.filter(p => p.category === currentCat);
+  if (searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const noun = currentCat || 'all';
+  count.textContent = `Showing ${filtered.length} ${noun} piece${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 0">
+      <i class="fas fa-gem" style="font-size:48px;color:var(--gold);opacity:.3;display:block;margin-bottom:16px"></i>
+      <h3 style="font-family:var(--ff-display);font-size:28px;margin-bottom:8px">No pieces found</h3>
+      <p style="color:var(--text-muted)">Try a different category or search term</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(p => buildProductCard(p, wishlist)).join('');
+  initScrollReveal();
+}
+
+// Filter chips
+document.getElementById('filterBar').addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  currentCat = chip.dataset.cat;
+  render();
+});
+
+// Search
+let _st;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(_st);
+  _st = setTimeout(() => { searchTerm = e.target.value; render(); }, 280);
+});
+</script>
+</body>
+</html>

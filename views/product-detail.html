@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<div class="breadcrumb">
+  <div class="container">
+    <a href="/">Home</a><span>›</span>
+    <a href="/products">Collection</a><span>›</span>
+    <span id="bc-cat"></span><span id="bc-sep" style="display:none">›</span>
+    <span id="bc-name" style="color:rgba(255,255,255,.75)">Loading...</span>
+  </div>
+</div>
+
+<section class="detail-section">
+  <div class="container" id="detailContainer">
+    <!-- skeleton -->
+    <div class="detail-grid">
+      <div style="border-radius:6px;overflow:hidden"><div class="skeleton" style="aspect-ratio:1;width:100%"></div></div>
+      <div style="padding-top:20px">
+        <div class="skel-line skeleton w40" style="height:12px;margin-bottom:12px"></div>
+        <div class="skel-line skeleton w80" style="height:44px;margin-bottom:8px"></div>
+        <div class="skel-line skeleton w60" style="height:36px;margin-bottom:24px"></div>
+        <div class="skel-line skeleton" style="height:80px;margin-bottom:24px"></div>
+        <div class="skel-line skeleton w80" style="height:48px;border-radius:6px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Related -->
+<section class="products-section" id="relatedSection" style="display:none">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">You May Also Like</p>
+      <h2 class="section-title" id="relatedTitle">More Pieces</h2>
+      <span class="ornament">✦ ✦ ✦</span>
+    </div>
+    <div class="products-grid" id="relatedGrid"></div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+(async () => {
+  const id = new URLSearchParams(window.location.search).get('id');
+  if (!id) { window.location.href = '/products'; return; }
+
+  const state   = await getAuthState();
+  const wishlist = state.loggedIn
+    ? (await (await fetch('/api/wishlist')).json()).wishlist.map(w => w._id || w)
+    : [];
+
+  try {
+    const res  = await fetch(`/api/products/${id}`);
+    const data = await res.json();
+    if (!data.success) { window.location.href = '/products'; return; }
+
+    const p = data.product;
+    document.title = `${p.name} – Rinky Jewellers`;
+
+    // Breadcrumb
+    document.getElementById('bc-cat').innerHTML = `<a href="/products?category=${p.category}">${p.category}</a>`;
+    document.getElementById('bc-sep').style.display = 'inline';
+    document.getElementById('bc-name').textContent  = p.name;
+
+    const inWish = wishlist.includes(p._id);
+
+    const isGoldOrSilver = !p.jewelryType || p.jewelryType === 'Gold' || p.jewelryType === 'Silver';
+    const hasHallmark = p.bisHallmark === true || (p.bisHallmark === undefined && isGoldOrSilver);
+    
+    let certifiedHTML = '';
+    if (isGoldOrSilver) {
+      const label = hasHallmark ? (p.bisNumber ? `BIS Hallmark (No: ${p.bisNumber})` : 'BIS Hallmark') : 'No Hallmark';
+      certifiedHTML = `
+        <div class="spec-item">
+          <i class="fas fa-certificate"></i>
+          <span>Certified</span>
+          <strong>${label}</strong>
+        </div>`;
+    }
+
+    document.getElementById('detailContainer').innerHTML = `
+      <div class="detail-grid">
+        <div class="detail-img">
+          <img src="${p.image}" alt="${p.name}" />
+          ${p.featured ? '<span class="detail-badge">✦ Featured Piece</span>' : ''}
+        </div>
+        <div class="detail-info">
+          <span class="detail-cat">${p.category}</span>
+          <h1 class="detail-name">${p.name}</h1>
+          <div class="ornament" style="text-align:left;margin:8px 0 4px;font-size:13px">✦</div>
+          <span class="stock-badge ${p.inStock ? 'in' : 'out'}">${p.inStock ? 'In Stock' : 'Out of Stock'}</span>
+          <p class="detail-price">${fmtPrice(p.price)}</p>
+          <p class="detail-desc">${p.description || 'A beautiful piece of jewellery crafted with love and precision.'}</p>
+ 
+          <div class="detail-specs">
+            <div class="spec-item">
+              <i class="fas fa-gem"></i>
+              <span>Material</span>
+              <strong>${p.material || '22K Gold'}</strong>
+            </div>
+            <div class="spec-item">
+              <i class="fas fa-balance-scale"></i>
+              <span>Weight</span>
+              <strong>${p.weight || 'N/A'}</strong>
+            </div>
+            ${certifiedHTML}
+          </div>
+
+          <div class="detail-actions">
+            <a href="https://wa.me/919839721897?text=Hi!%20I'm%20interested%20in%20${encodeURIComponent(p.name)}%20priced%20at%20${fmtPrice(p.price)}"
+               class="btn btn-gold btn-lg" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> Enquire on WhatsApp
+            </a>
+            <button class="detail-wish-btn ${inWish ? 'active' : ''}" id="wishBtn" onclick="handleWish('${p._id}')">
+              <i class="${inWish ? 'fas' : 'far'} fa-heart"></i>
+              ${inWish ? 'Saved' : 'Save to Wishlist'}
+            </button>
+            <a href="/contact" class="btn btn-outline btn-lg">
+              <i class="fas fa-envelope"></i> Contact Us
+            </a>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">
+            <i class="fas fa-truck" style="color:var(--gold);margin-right:6px"></i>Free delivery in Kanpur &nbsp;|&nbsp;
+            <i class="fas fa-undo" style="color:var(--gold);margin-right:6px"></i>Exchange available
+          </p>
+        </div>
+      </div>`;
+
+    // Related
+    if (data.related && data.related.length > 0) {
+      document.getElementById('relatedSection').style.display = 'block';
+      document.getElementById('relatedTitle').textContent = `More ${p.category}`;
+      document.getElementById('relatedGrid').innerHTML = data.related.map(r => buildProductCard(r, wishlist)).join('');
+      initScrollReveal();
+    }
+  } catch {
+    document.getElementById('detailContainer').innerHTML = `<p style="text-align:center;padding:60px;color:var(--text-muted)">Failed to load product.</p>`;
+  }
+})();
+
+async function handleWish(productId) {
+  const btn = document.getElementById('wishBtn');
+  await toggleWishlist(productId, null);
+  // Refresh state
+  const state = await getAuthState();
+  if (!state.loggedIn) return;
+  try {
+    const wr = await fetch('/api/wishlist');
+    const wd = await wr.json();
+    const inWish = (wd.wishlist || []).some(w => (w._id || w) === productId);
+    btn.className = `detail-wish-btn ${inWish ? 'active' : ''}`;
+    btn.innerHTML = `<i class="${inWish ? 'fas' : 'far'} fa-heart"></i> ${inWish ? 'Saved' : 'Save to Wishlist'}`;
+  } catch {}
+}
+</script>
+</body>
+</html>

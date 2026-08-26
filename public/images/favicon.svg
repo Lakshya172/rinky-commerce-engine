@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="favBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A1713"/>
+      <stop offset="100%" stop-color="#080705"/>
+    </radialGradient>
+    <linearGradient id="favGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE494"/>
+      <stop offset="40%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#996D12"/>
+    </linearGradient>
+    <linearGradient id="favGoldLight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C59B27"/>
+      <stop offset="50%" stop-color="#FFF5D1"/>
+      <stop offset="100%" stop-color="#E2B755"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Dark Disc Background -->
+  <circle cx="256" cy="256" r="250" fill="url(#favBg)" stroke="url(#favGold)" stroke-width="12"/>
+
+  <!-- ══════════ CROWN (TOP) ══════════ -->
+  <g transform="translate(256, 140) scale(1.15)">
+    <!-- Top Finial -->
+    <path d="M-3,-68 L3,-68 L3,-62 L8,-62 L8,-56 L3,-56 L3,-48 L-3,-48 L-3,-56 L-8,-56 L-8,-62 L-3,-62 Z" fill="url(#favGoldLight)"/>
+    <circle cx="0" cy="-68" r="4" fill="#FFF8E7"/>
+
+    <!-- Crown Orb -->
+    <ellipse cx="0" cy="-44" rx="8" ry="6" fill="url(#favGold)"/>
+
+    <!-- Crown Cap -->
+    <path d="M-42,-12 C-40,-38 -20,-48 0,-48 C20,-48 40,-38 42,-12 Z" fill="#0C0A07" stroke="url(#favGold)" stroke-width="2.5"/>
+
+    <!-- Golden Arches Ribs -->
+    <path d="M0,-48 Q0,-25 0,-12" stroke="url(#favGoldLight)" stroke-width="4" fill="none"/>
+    <path d="M0,-46 Q-22,-36 -32,-12" stroke="url(#favGoldLight)" stroke-width="3.5" fill="none"/>
+    <path d="M0,-46 Q22,-36 32,-12" stroke="url(#favGoldLight)" stroke-width="3.5" fill="none"/>
+
+    <!-- Fleur-de-lis / Crown Peaks -->
+    <path d="M0,-24 C-4,-20 -7,-16 -7,-12 C-7,-8 0,-7 0,-7 C0,-7 7,-8 7,-12 C7,-16 4,-20 0,-24 Z" fill="url(#favGoldLight)"/>
+    <circle cx="0" cy="-25" r="3.5" fill="#FFFFFF"/>
+    <path d="M-22,-20 C-25,-17 -27,-14 -27,-11 C-27,-8 -22,-8 -22,-8 C-22,-8 -17,-8 -17,-11 C-17,-14 -19,-17 -22,-20 Z" fill="url(#favGoldLight)"/>
+    <circle cx="-22" cy="-21" r="3" fill="#FFFFFF"/>
+    <path d="M22,-20 C19,-17 17,-14 17,-11 C17,-8 22,-8 22,-8 C22,-8 27,-8 27,-11 C27,-14 25,-17 22,-20 Z" fill="url(#favGoldLight)"/>
+    <circle cx="22" cy="-21" r="3" fill="#FFFFFF"/>
+
+    <!-- Crown Base Band -->
+    <rect x="-46" y="-8" width="92" height="14" rx="3" fill="url(#favGold)" stroke="url(#favGoldLight)" stroke-width="1.5"/>
+    <circle cx="-36" cy="-1" r="3" fill="#FFFFFF"/>
+    <circle cx="-12" cy="-1" r="3" fill="#FFFFFF"/>
+    <circle cx="12" cy="-1" r="3" fill="#FFFFFF"/>
+    <circle cx="36" cy="-1" r="3" fill="#FFFFFF"/>
+  </g>
+
+  <!-- ══════════ LAUREL WREATH & CIRCLE ══════════ -->
+  <g transform="translate(256, 280)">
+    <!-- Rings -->
+    <circle cx="0" cy="0" r="112" fill="none" stroke="url(#favGold)" stroke-width="4.5"/>
+    <circle cx="0" cy="0" r="100" fill="#0C0A07" stroke="url(#favGoldLight)" stroke-width="2"/>
+    
+    <!-- Laurel Leaves -->
+    <g fill="url(#favGoldLight)" stroke="url(#favGold)" stroke-width="0.8">
+      <!-- Left Leaves -->
+      <path d="M-15,106 C-26,108 -38,101 -38,101 C-38,101 -32,88 -22,92 Z"/>
+      <path d="M-33,105 C-46,102 -53,90 -53,90 C-53,90 -42,84 -33,91 Z"/>
+      <path d="M-51,92 C-64,86 -68,72 -68,72 C-68,72 -55,68 -46,79 Z"/>
+      <path d="M-64,77 C-77,67 -79,53 -79,53 C-79,53 -66,52 -57,64 Z"/>
+      <path d="M-75,57 C-88,44 -88,29 -88,29 C-88,29 -75,31 -68,44 Z"/>
+      <path d="M-84,35 C-96,20 -92,4 -92,4 C-92,4 -80,9 -76,23 Z"/>
+      <path d="M-88,11 C-99,-7 -92,-22 -92,-22 C-92,-22 -80,-15 -79,-1 Z"/>
+      <path d="M-88,-13 C-97,-31 -88,-46 -88,-46 C-88,-46 -77,-37 -79,-23 Z"/>
+      <path d="M-83,-35 C-89,-53 -78,-66 -78,-66 C-78,-66 -68,-56 -73,-43 Z"/>
+      <path d="M-72,-55 C-77,-73 -64,-84 -64,-84 C-64,-84 -55,-75 -62,-62 Z"/>
+
+      <!-- Right Leaves -->
+      <path d="M15,106 C26,108 38,101 38,101 C38,101 32,88 22,92 Z"/>
+      <path d="M33,105 C46,102 53,90 53,90 C53,90 42,84 33,91 Z"/>
+      <path d="M51,92 C64,86 68,72 68,72 C68,72 55,68 46,79 Z"/>
+      <path d="M64,77 C77,67 79,53 79,53 C79,53 66,52 57,64 Z"/>
+      <path d="M75,57 C88,44 88,29 88,29 C88,29 75,31 68,44 Z"/>
+      <path d="M84,35 C96,20 92,4 92,4 C92,4 80,9 76,23 Z"/>
+      <path d="M88,11 C99,-7 92,-22 92,-22 C92,-22 80,-15 79,-1 Z"/>
+      <path d="M88,-13 C97,-31 88,-46 88,-46 C88,-46 77,-37 79,-23 Z"/>
+      <path d="M83,-35 C89,-53 78,-66 78,-66 C78,-66 68,-56 73,-43 Z"/>
+      <path d="M72,-55 C77,-73 64,-84 64,-84 C64,-84 55,-75 62,-62 Z"/>
+    </g>
+
+    <!-- ══════════ "RJ" MONOGRAM TEXT ══════════ -->
+    <text x="0" y="36" font-family="'Playfair Display', 'Cinzel', serif" font-size="108" font-weight="700" fill="url(#favGoldLight)" text-anchor="middle" letter-spacing="4">RJ</text>
+  </g>
+</svg>

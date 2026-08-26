@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<section class="profile-section">
+  <div class="container">
+    <div style="margin-bottom:28px">
+      <p class="eyebrow">Account</p>
+      <h1 style="font-family:var(--ff-display);font-size:clamp(36px,5vw,56px);font-weight:400">My Profile</h1>
+    </div>
+
+    <div class="profile-grid" id="profileGrid">
+      <!-- Loading -->
+      <div class="skel-card" style="height:300px"><div class="skeleton" style="height:100%"></div></div>
+      <div>
+        <div class="skel-card" style="height:200px;margin-bottom:20px"><div class="skeleton" style="height:100%"></div></div>
+        <div class="skel-card" style="height:200px"><div class="skeleton" style="height:100%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+(async () => {
+  const state = await getAuthState();
+  if (!state.loggedIn) {
+    showToast('Please log in to view your profile.', 'info');
+    setTimeout(() => window.location.href = '/login?redirect=/profile', 900);
+    return;
+  }
+
+  const u = state.user;
+  const initials = u.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  document.getElementById('profileGrid').innerHTML = `
+    <!-- Sidebar -->
+    <div class="profile-sidebar">
+      <div class="profile-avatar">
+        <div class="avatar-circle">${initials}</div>
+        <p style="color:var(--white);font-family:var(--ff-display);font-size:20px;margin-bottom:4px">${u.name}</p>
+        <p style="color:rgba(255,255,255,.45);font-size:13px">${u.email}</p>
+        ${u.role === 'admin' ? '<span style="display:inline-block;background:var(--gold);color:var(--black);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:8px;letter-spacing:.08em">ADMIN</span>' : ''}
+      </div>
+      <nav class="profile-nav">
+        <a href="#info" class="active"><i class="fas fa-user"></i> Personal Info</a>
+        <a href="#password"><i class="fas fa-lock"></i> Change Password</a>
+        <a href="/wishlist"><i class="fas fa-heart"></i> My Wishlist</a>
+        ${u.role === 'admin' ? '<a href="/admin"><i class="fas fa-crown"></i> Admin Panel</a>' : ''}
+        <a href="#" data-logout style="color:#e74c3c !important"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </nav>
+    </div>
+
+    <!-- Content -->
+    <div class="profile-content">
+
+      <!-- Personal Info -->
+      <div class="profile-card" id="info">
+        <h3><i class="fas fa-user"></i> Personal Information</h3>
+        <div class="form-alert form-alert-success" id="infoSuccess"><i class="fas fa-check-circle"></i><span></span></div>
+        <div class="form-alert form-alert-error"   id="infoError"><i class="fas fa-exclamation-circle"></i><span></span></div>
+        <form id="infoForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark" for="profName">Full Name</label>
+              <input class="form-input light" id="profName" type="text" value="${u.name}" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label dark" for="profPhone">Phone Number</label>
+              <input class="form-input light" id="profPhone" type="tel" value="${u.phone || ''}" placeholder="+91 98397 21897" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">Email Address</label>
+            <input class="form-input light" type="email" value="${u.email}" disabled style="opacity:.6;cursor:not-allowed" />
+            <p class="form-hint dark">Email cannot be changed</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">Member Since</label>
+            <input class="form-input light" type="text" value="${fmtDate(u.createdAt)}" disabled style="opacity:.6;cursor:not-allowed" />
+          </div>
+          <button type="submit" class="btn btn-gold" id="infoBtn"><span>Save Changes</span></button>
+        </form>
+      </div>
+
+      <!-- Change Password -->
+      <div class="profile-card" id="password">
+        <h3><i class="fas fa-lock"></i> Change Password</h3>
+        <div class="form-alert form-alert-success" id="pwdSuccess"><i class="fas fa-check-circle"></i><span></span></div>
+        <div class="form-alert form-alert-error"   id="pwdError"><i class="fas fa-exclamation-circle"></i><span></span></div>
+        <form id="pwdForm">
+          <div class="form-group">
+            <label class="form-label dark" for="currentPwd">Current Password</label>
+            <div class="password-wrap">
+              <input class="form-input light" id="currentPwd" type="password" placeholder="Your current password" required />
+              <i class="fas fa-eye toggle-pwd light"></i>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark" for="newPwd">New Password</label>
+              <div class="password-wrap">
+                <input class="form-input light" id="newPwd" type="password" placeholder="At least 6 characters" required />
+                <i class="fas fa-eye toggle-pwd light"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label dark" for="confirmPwd">Confirm New Password</label>
+              <div class="password-wrap">
+                <input class="form-input light" id="confirmPwd" type="password" placeholder="Repeat new password" required />
+                <i class="fas fa-eye toggle-pwd light"></i>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-gold" id="pwdBtn"><span>Update Password</span></button>
+        </form>
+      </div>
+
+    </div>`;
+
+  // Re-init password toggles after render
+  initPasswordToggles();
+
+  // Smooth scroll to hash
+  document.querySelectorAll('.profile-nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.profile-nav a').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  });
+
+  // Logout
+  document.querySelectorAll('[data-logout]').forEach(btn =>
+    btn.addEventListener('click', logout));
+
+  // ── Update Info ──
+  document.getElementById('infoForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn  = document.getElementById('infoBtn');
+    const succ = document.getElementById('infoSuccess');
+    const err  = document.getElementById('infoError');
+    succ.classList.remove('show'); err.classList.remove('show');
+
+    const name  = document.getElementById('profName').value.trim();
+    const phone = document.getElementById('profPhone').value.trim();
+    if (!name) { showFAlert(err, 'Name is required.'); return; }
+
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Saving...';
+    try {
+      const r = await fetch('/api/auth/profile', {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, phone })
+      });
+      const d = await r.json();
+      if (d.success) {
+        showFAlert(succ, 'Profile updated successfully!');
+        clearAuthState();
+        showToast('Profile updated!', 'success');
+      } else {
+        showFAlert(err, d.message);
+      }
+    } catch { showFAlert(err, 'Server error.'); }
+    btn.disabled = false;
+    btn.querySelector('span').textContent = 'Save Changes';
+  });
+
+  // ── Change Password ──
+  document.getElementById('pwdForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn  = document.getElementById('pwdBtn');
+    const succ = document.getElementById('pwdSuccess');
+    const err  = document.getElementById('pwdError');
+    succ.classList.remove('show'); err.classList.remove('show');
+
+    const currentPassword = document.getElementById('currentPwd').value;
+    const newPassword     = document.getElementById('newPwd').value;
+    const confirm         = document.getElementById('confirmPwd').value;
+
+    if (newPassword !== confirm) { showFAlert(err, 'Passwords do not match.'); return; }
+    if (newPassword.length < 6)  { showFAlert(err, 'New password must be at least 6 characters.'); return; }
+
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Updating...';
+    try {
+      const r = await fetch('/api/auth/change-password', {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const d = await r.json();
+      if (d.success) {
+        showFAlert(succ, 'Password changed successfully!');
+        document.getElementById('pwdForm').reset();
+        showToast('Password updated!', 'success');
+      } else {
+        showFAlert(err, d.message);
+      }
+    } catch { showFAlert(err, 'Server error.'); }
+    btn.disabled = false;
+    btn.querySelector('span').textContent = 'Update Password';
+  });
+
+  function showFAlert(el, msg) {
+    el.classList.add('show');
+    el.querySelector('span').textContent = msg;
+  }
+})();
+</script>
+</body>
+</html>

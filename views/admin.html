@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<section class="admin-section">
+  <div class="container">
+
+    <div class="admin-header">
+      <h1><i class="fas fa-crown"></i> Admin Dashboard</h1>
+      <p>Manage products, view messages, and monitor your store</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-tile"><i class="fas fa-gem"></i><span class="num" id="s-products">–</span><span class="lbl">Products</span></div>
+      <div class="stat-tile"><i class="fas fa-star"></i><span class="num" id="s-featured">–</span><span class="lbl">Featured</span></div>
+      <div class="stat-tile"><i class="fas fa-envelope"></i><span class="num" id="s-messages">–</span><span class="lbl">Messages</span></div>
+      <div class="stat-tile"><i class="fas fa-users"></i><span class="num" id="s-users">–</span><span class="lbl">Users</span></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="products-tab">📦 Products</button>
+      <button class="admin-tab" data-tab="add-tab">➕ Add Product</button>
+      <button class="admin-tab" data-tab="messages-tab">✉️ Messages</button>
+      <button class="admin-tab" data-tab="users-tab">👥 Users</button>
+    </div>
+
+    <!-- ── PRODUCTS TAB ── -->
+    <div class="admin-tab-content active" id="products-tab">
+      <div class="admin-card">
+        <h3><i class="fas fa-list"></i> All Products</h3>
+        <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+          <form id="seedForm" style="display:inline">
+            <button type="submit" class="btn btn-outline btn-sm"><i class="fas fa-database"></i> Seed Sample Data</button>
+          </form>
+          <button class="btn btn-sm" style="background:var(--ivory-2)" onclick="loadProducts()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="productsTable">
+            <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Type</th><th>Price</th><th>Material</th><th>Hallmark</th><th>Featured</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody id="productsTbody"><tr><td colspan="10" class="empty-msg">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADD PRODUCT TAB ── -->
+    <div class="admin-tab-content" id="add-tab">
+      <div class="admin-card">
+        <h3><i class="fas fa-plus-circle"></i> Add New Product</h3>
+        <div class="form-alert form-alert-success" id="addSuccess"><i class="fas fa-check-circle"></i><span></span></div>
+        <div class="form-alert form-alert-error"   id="addError"><i class="fas fa-exclamation-circle"></i><span></span></div>
+
+        <form id="addProductForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark">Product Name *</label>
+              <input class="form-input light" id="pName" type="text" placeholder="e.g. Royal Gold Necklace" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label dark">Price (₹) *</label>
+              <input class="form-input light" id="pPrice" type="number" placeholder="e.g. 45000" min="1" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark">Category *</label>
+              <select class="form-input light" id="pCategory" required>
+                <option value="">Select Category</option>
+                <option value="Necklaces">Necklaces</option>
+                <option value="Rings">Rings</option>
+                <option value="Earrings">Earrings</option>
+                <option value="Bangles">Bangles</option>
+                <option value="new">+ Add New Category</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label dark">Jewelry Type *</label>
+              <select class="form-input light" id="pJewelryType" required>
+                <option value="Gold">Gold</option>
+                <option value="Silver">Silver</option>
+                <option value="Artificial">Artificial</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark">Material</label>
+              <input class="form-input light" id="pMaterial" type="text" placeholder="e.g. 22K Gold" />
+            </div>
+            <div class="form-group">
+              <label class="form-label dark">Weight</label>
+              <input class="form-input light" id="pWeight" type="text" placeholder="e.g. 35g" />
+            </div>
+          </div>
+          
+          <!-- Custom category name (hidden by default) -->
+          <div class="form-group" id="customCategoryGroup" style="display:none;margin-bottom:16px">
+            <label class="form-label dark">New Category Name *</label>
+            <input class="form-input light" id="pCustomCategory" type="text" placeholder="e.g. Bracelets" />
+          </div>
+
+          <!-- Hallmark options (hidden unless Gold or Silver selected) -->
+          <div class="form-row" id="hallmarkRow" style="margin-bottom:16px">
+            <div class="form-group">
+              <label class="form-label dark">BIS Hallmarked *</label>
+              <select class="form-input light" id="pHallmark">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div class="form-group" id="hallmarkNumberGroup">
+              <label class="form-label dark">BIS Hallmark Number (HUID)</label>
+              <input class="form-input light" id="pHallmarkNumber" type="text" placeholder="e.g. HM8923" />
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group" style="display:flex;gap:24px;align-items:center;padding-top:10px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+                <input type="checkbox" id="pFeatured" style="accent-color:var(--gold);width:16px;height:16px" />
+                Mark as Featured
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+                <input type="checkbox" id="pInStock" checked style="accent-color:var(--gold);width:16px;height:16px" />
+                In Stock
+              </label>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label dark">Image Source *</label>
+            <div style="display:flex;gap:24px;margin-bottom:10px;align-items:center">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+                <input type="radio" name="pImgSource" value="url" checked style="accent-color:var(--gold);width:16px;height:16px" />
+                Image Link (URL)
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+                <input type="radio" name="pImgSource" value="upload" style="accent-color:var(--gold);width:16px;height:16px" />
+                Upload Image
+              </label>
+            </div>
+            
+            <div id="imgUrlGroup">
+              <input class="form-input light" id="pImage" type="url" placeholder="https://images.unsplash.com/..." />
+            </div>
+            
+            <div id="imgUploadGroup" style="display:none">
+              <input class="form-input light" id="pImageFile" type="file" accept="image/*" style="padding:8px" />
+            </div>
+          </div>
+          <!-- Image Preview -->
+          <div id="imgPreviewWrap" style="margin-bottom:16px;display:none">
+            <img id="imgPreview" src="" alt="Preview" style="height:120px;width:120px;object-fit:cover;border-radius:6px;border:2px solid var(--gold)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">Description</label>
+            <textarea class="form-input light" id="pDesc" rows="3" placeholder="Describe this beautiful piece..." style="resize:vertical"></textarea>
+          </div>
+          <button type="submit" class="btn btn-gold" id="addBtn"><i class="fas fa-plus"></i><span>Add Product</span></button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── MESSAGES TAB ── -->
+    <div class="admin-tab-content" id="messages-tab">
+      <div class="admin-card">
+        <h3><i class="fas fa-envelope-open"></i> Customer Messages</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Date</th><th>Action</th></tr></thead>
+            <tbody id="messagesTbody"><tr><td colspan="6" class="empty-msg">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS TAB ── -->
+    <div class="admin-tab-content" id="users-tab">
+      <div class="admin-card">
+        <h3><i class="fas fa-users"></i> Registered Users</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="usersTbody"><tr><td colspan="6" class="empty-msg">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+(async () => {
+  // Auth guard
+  const state = await getAuthState();
+  if (!state.loggedIn) {
+    showToast('Please log in first.', 'error');
+    setTimeout(() => window.location.href = '/login?redirect=/admin', 900);
+    return;
+  }
+  if (state.user.role !== 'admin') {
+    showToast('Admin access required.', 'error');
+    setTimeout(() => window.location.href = '/', 900);
+    return;
+  }
+
+  loadStats();
+  loadProducts();
+  loadMessages();
+  loadUsers();
+})();
+
+// ── Tab switching ──
+document.querySelectorAll('.admin-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Stats ──
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats');
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('s-products').textContent = d.stats.products;
+      document.getElementById('s-featured').textContent = d.stats.featured;
+      document.getElementById('s-messages').textContent = d.stats.messages;
+      document.getElementById('s-users').textContent    = d.stats.users;
+    }
+  } catch {}
+}
+
+// ── Category Dropdown Helper ──
+function populateCategoryDropdown(products) {
+  const select = document.getElementById('pCategory');
+  const currentVal = select.value;
+  
+  const defaultCats = ['Necklaces', 'Rings', 'Earrings', 'Bangles'];
+  const productCats = products ? products.map(p => p.category) : [];
+  const allCats = [...new Set([...defaultCats, ...productCats])].filter(Boolean);
+  
+  select.innerHTML = '<option value="">Select Category</option>' +
+    allCats.map(cat => `<option value="${cat}">${cat}</option>`).join('') +
+    '<option value="new">+ Add New Category</option>';
+    
+  if (allCats.includes(currentVal) || currentVal === 'new') {
+    select.value = currentVal;
+  }
+}
+
+// ── Products ──
+async function loadProducts() {
+  const tbody = document.getElementById('productsTbody');
+  tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">Loading...</td></tr>';
+  try {
+    const r = await fetch('/api/admin/products');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Server error');
+    
+    // Dynamically populate category select options
+    populateCategoryDropdown(d.products);
+    
+    if (!d.products || !d.products.length) {
+      tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">No products yet. Use "Add Product" tab or seed sample data.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = d.products.map(p => {
+      const isGoldOrSilver = !p.jewelryType || p.jewelryType === 'Gold' || p.jewelryType === 'Silver';
+      const hasHallmark = p.bisHallmark === true || (p.bisHallmark === undefined && isGoldOrSilver);
+      const hallmarkText = isGoldOrSilver ? (hasHallmark ? (p.bisNumber ? `✓ Yes (${p.bisNumber})` : '✓ Yes') : '✗ No') : '—';
+      
+      return `
+        <tr>
+          <td><img src="${p.image}" alt="${p.name}" class="tbl-img" /></td>
+          <td><strong>${p.name}</strong></td>
+          <td><span class="cat-chip">${p.category}</span></td>
+          <td><span style="font-weight:600">${p.jewelryType || 'Gold'}</span></td>
+          <td><strong>${fmtPrice(p.price)}</strong></td>
+          <td>${p.material || '—'}</td>
+          <td><span style="font-size:11px;font-weight:600;color:${isGoldOrSilver && hasHallmark ? 'var(--gold-dark)' : 'var(--text-muted)'}">${hallmarkText}</span></td>
+          <td>
+            <button onclick="toggleFeatured('${p._id}', this)" class="btn btn-sm" style="background:${p.featured ? 'var(--gold)' : 'var(--ivory-2)'};color:${p.featured ? 'var(--black)' : 'var(--text-muted)'}">
+              ${p.featured ? '⭐ Yes' : '— No'}
+            </button>
+          </td>
+          <td><span style="color:${p.inStock ? 'var(--green)' : 'var(--red)'};font-weight:600">${p.inStock ? '✓ In Stock' : '✗ Out'}</span></td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap">
+            <a href="/product?id=${p._id}" class="btn btn-sm btn-outline" target="_blank">View</a>
+            <button onclick="deleteProduct('${p._id}', this)" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`;
+    }).join('');
+  } catch(err) { tbody.innerHTML = `<tr><td colspan="10" class="empty-msg" style="color:var(--red)">Failed to load: ${err.message}</td></tr>`; }
+}
+
+async function deleteProduct(id, btn) {
+  if (!confirm('Delete this product? This cannot be undone.')) return;
+  btn.disabled = true;
+  try {
+    await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+    showToast('Product deleted.', 'info');
+    loadProducts(); loadStats();
+  } catch { showToast('Delete failed.', 'error'); btn.disabled = false; }
+}
+
+async function toggleFeatured(id, btn) {
+  try {
+    const r = await fetch(`/api/admin/products/${id}/featured`, { method: 'PATCH' });
+    const d = await r.json();
+    if (d.success) {
+      btn.textContent = d.featured ? '⭐ Yes' : '— No';
+      btn.style.background = d.featured ? 'var(--gold)' : 'var(--ivory-2)';
+      btn.style.color = d.featured ? 'var(--black)' : 'var(--text-muted)';
+      loadStats();
+    }
+  } catch {}
+}
+
+// ── Seed ──
+document.getElementById('seedForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!confirm('This will replace ALL existing products with 10 sample products. Continue?')) return;
+  const btn = e.target.querySelector('button');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Seeding...';
+  try {
+    const r = await fetch('/api/admin/seed', { method: 'POST' });
+    const d = await r.json();
+    showToast(d.message || 'Done!', 'success');
+    loadProducts(); loadStats();
+  } catch { showToast('Seed failed.', 'error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-database"></i> Seed Sample Data';
+});
+
+// ── Form field toggles ──
+document.getElementById('pCategory').addEventListener('change', e => {
+  const customGroup = document.getElementById('customCategoryGroup');
+  const customInput = document.getElementById('pCustomCategory');
+  if (e.target.value === 'new') {
+    customGroup.style.display = 'block';
+    customInput.setAttribute('required', 'true');
+  } else {
+    customGroup.style.display = 'none';
+    customInput.removeAttribute('required');
+    customInput.value = '';
+  }
+});
+
+document.getElementById('pJewelryType').addEventListener('change', e => {
+  const hallmarkRow = document.getElementById('hallmarkRow');
+  const isGoldOrSilver = e.target.value === 'Gold' || e.target.value === 'Silver';
+  hallmarkRow.style.display = isGoldOrSilver ? 'flex' : 'none';
+  if (!isGoldOrSilver) {
+    document.getElementById('pHallmark').value = 'false';
+    document.getElementById('pHallmarkNumber').value = '';
+    document.getElementById('hallmarkNumberGroup').style.display = 'none';
+  }
+});
+
+document.getElementById('pHallmark').addEventListener('change', e => {
+  const numGroup = document.getElementById('hallmarkNumberGroup');
+  numGroup.style.display = e.target.value === 'true' ? 'block' : 'none';
+  if (e.target.value === 'false') {
+    document.getElementById('pHallmarkNumber').value = '';
+  }
+});
+
+// ── Add Product Image Handlers ──
+let uploadedImgBase64 = '';
+
+document.querySelectorAll('input[name="pImgSource"]').forEach(radio => {
+  radio.addEventListener('change', e => {
+    const isUrl = e.target.value === 'url';
+    document.getElementById('imgUrlGroup').style.display = isUrl ? 'block' : 'none';
+    document.getElementById('imgUploadGroup').style.display = isUrl ? 'none' : 'block';
+    
+    // Clear inputs and reset preview
+    document.getElementById('pImage').value = '';
+    document.getElementById('pImageFile').value = '';
+    uploadedImgBase64 = '';
+    document.getElementById('imgPreviewWrap').style.display = 'none';
+    document.getElementById('imgPreview').src = '';
+  });
+});
+
+document.getElementById('pImageFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  const wrap = document.getElementById('imgPreviewWrap');
+  const img  = document.getElementById('imgPreview');
+  
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      uploadedImgBase64 = evt.target.result;
+      img.src = uploadedImgBase64;
+      wrap.style.display = 'block';
+    };
+    reader.onerror = function() {
+      showToast('Failed to read file.', 'error');
+      uploadedImgBase64 = '';
+      wrap.style.display = 'none';
+      img.src = '';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    uploadedImgBase64 = '';
+    wrap.style.display = 'none';
+    img.src = '';
+  }
+});
+
+document.getElementById('pImage').addEventListener('input', e => {
+  const wrap = document.getElementById('imgPreviewWrap');
+  const img  = document.getElementById('imgPreview');
+  const val  = e.target.value.trim();
+  if (val.startsWith('http')) {
+    img.src = val; wrap.style.display = 'block';
+    img.onerror = () => { wrap.style.display = 'none'; };
+  } else { wrap.style.display = 'none'; }
+});
+
+document.getElementById('addProductForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const succ = document.getElementById('addSuccess');
+  const err  = document.getElementById('addError');
+  const btn  = document.getElementById('addBtn');
+  succ.classList.remove('show'); err.classList.remove('show');
+
+  let category = document.getElementById('pCategory').value;
+  if (category === 'new') {
+    category = document.getElementById('pCustomCategory').value.trim();
+  }
+
+  const jewelryType = document.getElementById('pJewelryType').value;
+  const isGoldOrSilver = jewelryType === 'Gold' || jewelryType === 'Silver';
+  const bisHallmark = isGoldOrSilver && document.getElementById('pHallmark').value === 'true';
+  const bisNumber = bisHallmark ? document.getElementById('pHallmarkNumber').value.trim() : '';
+
+  const imgSource = document.querySelector('input[name="pImgSource"]:checked').value;
+  let image = '';
+  if (imgSource === 'url') {
+    image = document.getElementById('pImage').value.trim();
+  } else {
+    image = uploadedImgBase64;
+  }
+
+  const body = {
+    name:        document.getElementById('pName').value.trim(),
+    price:       document.getElementById('pPrice').value,
+    category:    category,
+    jewelryType: jewelryType,
+    bisHallmark: bisHallmark,
+    bisNumber:   bisNumber,
+    image:       image,
+    description: document.getElementById('pDesc').value.trim(),
+    material:    document.getElementById('pMaterial').value.trim(),
+    weight:      document.getElementById('pWeight').value.trim(),
+    featured:    document.getElementById('pFeatured').checked,
+    inStock:     document.getElementById('pInStock').checked,
+  };
+
+  if (!body.name || !body.price || !body.category || !body.image) {
+    showA(err, 'Name, price, category and image are required.'); return;
+  }
+
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Adding...';
+  try {
+    const r = await fetch('/api/admin/products', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.success) {
+      showA(succ, `"${d.product.name}" added successfully!`);
+      document.getElementById('addProductForm').reset();
+      document.getElementById('customCategoryGroup').style.display = 'none';
+      document.getElementById('hallmarkRow').style.display = 'flex';
+      document.getElementById('hallmarkNumberGroup').style.display = 'block';
+      document.getElementById('imgUrlGroup').style.display = 'block';
+      document.getElementById('imgUploadGroup').style.display = 'none';
+      document.getElementById('imgPreviewWrap').style.display = 'none';
+      document.getElementById('imgPreview').src = '';
+      uploadedImgBase64 = '';
+      loadProducts(); loadStats();
+      showToast('Product added!', 'success');
+    } else { showA(err, d.message); }
+  } catch { showA(err, 'Server error.'); }
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Add Product';
+});
+
+// ── Messages ──
+async function loadMessages() {
+  const tbody = document.getElementById('messagesTbody');
+  try {
+    const r = await fetch('/api/admin/messages');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Server error');
+    if (!d.messages || !d.messages.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No messages yet.</td></tr>'; return; }
+    tbody.innerHTML = d.messages.map(m => `
+      <tr>
+        <td><strong>${m.name}</strong></td>
+        <td><a href="mailto:${m.email}" style="color:var(--gold)">${m.email}</a></td>
+        <td>${m.phone || '—'}</td>
+        <td style="max-width:260px;color:var(--text-muted)">${m.message.slice(0, 80)}${m.message.length > 80 ? '…' : ''}</td>
+        <td style="white-space:nowrap">${fmtDate(m.createdAt)}</td>
+        <td>
+          <button onclick="deleteMessage('${m._id}', this)" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`).join('');
+  } catch(err) { tbody.innerHTML = `<tr><td colspan="6" class="empty-msg" style="color:var(--red)">Failed to load: ${err.message}</td></tr>`; }
+}
+
+async function deleteMessage(id, btn) {
+  if (!confirm('Delete this message?')) return;
+  btn.disabled = true;
+  try {
+    await fetch(`/api/admin/messages/${id}`, { method: 'DELETE' });
+    showToast('Message deleted.', 'info');
+    loadMessages(); loadStats();
+  } catch { btn.disabled = false; }
+}
+
+// ── Users ──
+async function loadUsers() {
+  const tbody = document.getElementById('usersTbody');
+  try {
+    const r = await fetch('/api/admin/users');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Server error');
+    if (!d.users || !d.users.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No users yet.</td></tr>'; return; }
+    tbody.innerHTML = d.users.map(u => `
+      <tr>
+        <td><strong>${u.name}</strong></td>
+        <td>${u.email}</td>
+        <td>${u.phone || '—'}</td>
+        <td><span style="background:${u.role==='admin'?'var(--gold)':'var(--ivory-2)'};color:${u.role==='admin'?'var(--black)':'var(--text-muted)'};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">${u.role.toUpperCase()}</span></td>
+        <td style="white-space:nowrap">${fmtDate(u.createdAt)}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          <button onclick="resetUserPassword('${u._id}', this)" class="btn btn-sm btn-outline" title="Reset Password"><i class="fas fa-key"></i></button>
+          <button onclick="deleteUser('${u._id}', this)" class="btn btn-sm btn-danger" title="Delete User"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`).join('');
+  } catch(err) { tbody.innerHTML = `<tr><td colspan="6" class="empty-msg" style="color:var(--red)">Failed to load: ${err.message}</td></tr>`; }
+}
+
+async function deleteUser(id, btn) {
+  if (!confirm('Delete this user? This action cannot be undone.')) return;
+  btn.disabled = true;
+  try {
+    const r = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) {
+      showToast('User deleted.', 'success');
+      loadUsers(); loadStats();
+    } else {
+      showToast(d.message || 'Delete failed.', 'error');
+      btn.disabled = false;
+    }
+  } catch {
+    showToast('Delete failed.', 'error');
+    btn.disabled = false;
+  }
+}
+
+async function resetUserPassword(id, btn) {
+  const newPassword = prompt('Enter the new password for this user (min 6 characters):');
+  if (!newPassword) return; // User cancelled
+  if (newPassword.length < 6) {
+    alert('Password must be at least 6 characters.');
+    return;
+  }
+  
+  btn.disabled = true;
+  try {
+    const r = await fetch(`/api/admin/users/${id}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast('Password reset successfully.', 'success');
+    } else {
+      showToast(d.message || 'Reset failed.', 'error');
+    }
+  } catch {
+    showToast('Reset failed.', 'error');
+  }
+  btn.disabled = false;
+}
+
+function showA(el, msg) {
+  el.classList.add('show');
+  el.querySelector('span').textContent = msg;
+}
+
+// First-time admin creation helper (shown only if no admin exists)
+async function makeFirstAdmin() {
+  // This is handled by seeding — the first user to register can be promoted via DB
+}
+</script>
+</body>
+</html>

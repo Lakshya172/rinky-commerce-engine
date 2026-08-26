@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">We'd Love to Hear From You</p>
+    <h1>Contact Us</h1>
+    <span class="ornament" style="display:block;margin-top:10px">✦ ✦ ✦</span>
+  </div>
+</section>
+
+<section class="contact-section">
+  <div class="container">
+    <div class="contact-grid">
+      <!-- Info -->
+      <div class="contact-info">
+        <p class="eyebrow">Reach Out</p>
+        <h2>Get in Touch</h2>
+        <p>Have a question, want to place a custom order, or simply want to know more about our collection? We're always delighted to help.</p>
+        <div class="info-list">
+          <div class="info-item">
+            <div class="info-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <strong>Visit Our Store</strong>
+              <p>Awas Vikas Colony, Kanpur<br>Uttar Pradesh – 208 022</p>
+              <a href="https://share.google/wYAWqkxLuFsukUtnW" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="margin-top:8px;display:inline-flex;align-items:center;gap:6px">
+                <i class="fas fa-map-marked-alt" style="color:var(--gold)"></i> Open in Google Maps
+              </a>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-icon"><i class="fab fa-whatsapp"></i></div>
+            <div>
+              <strong>WhatsApp</strong>
+              <p><a href="https://wa.me/message/3C7ZPKXJJS3OP1" target="_blank" rel="noopener" style="color:var(--gold)">Chat with us on WhatsApp</a></p>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-icon"><i class="fab fa-instagram"></i></div>
+            <div>
+              <strong>Instagram</strong>
+              <p><a href="https://www.instagram.com/rinky_jewellers?igsi=dXFvd3ZwcnZtMmU0" target="_blank" rel="noopener" style="color:var(--gold)">@rinky_jewellers</a></p>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-icon"><i class="fas fa-phone"></i></div>
+            <div>
+              <strong>Phone Call</strong>
+              <p><a href="tel:+919839721897" style="color:var(--gold)">+91 98397 21897</a></p>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-icon"><i class="fas fa-envelope"></i></div>
+            <div><strong>Email</strong><p><a href="mailto:rinkyjewellers0@gmail.com" style="color:var(--gold)">rinkyjewellers0@gmail.com</a></p></div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-icon"><i class="fas fa-clock"></i></div>
+            <div><strong>Working Hours</strong><p>Mon – Sun: 11:00 AM – 8:00 PM<br><span style="color:var(--gold);font-size:12px;font-weight:600">✦ Open All 7 Days</span></p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="contact-form-card">
+        <h2>Send a Message</h2>
+        <div class="form-alert form-alert-success" id="formSuccess"><i class="fas fa-check-circle"></i><span></span></div>
+        <div class="form-alert form-alert-error"   id="formError"><i class="fas fa-exclamation-circle"></i><span></span></div>
+
+        <form id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark" for="cName">Your Name *</label>
+              <input class="form-input light" id="cName" type="text" placeholder="Priya Sharma" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label dark" for="cPhone">Phone (optional)</label>
+              <input class="form-input light" id="cPhone" type="tel" placeholder="+91 98397 21897" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label dark" for="cEmail">Email Address *</label>
+            <input class="form-input light" id="cEmail" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label dark" for="cMsg">Your Message *</label>
+            <textarea class="form-input light" id="cMsg" rows="5" placeholder="I'd like to enquire about a custom necklace design..." required style="resize:vertical;min-height:120px"></textarea>
+          </div>
+          <button type="submit" class="btn btn-gold btn-lg btn-full" id="submitBtn">
+            <i class="fas fa-paper-plane"></i>
+            <span>Send Message</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Google Map Section -->
+<section class="map-section" style="padding:0 0 80px">
+  <div class="container">
+    <div style="background:var(--dark);border:1.5px solid rgba(200,169,110,0.45);box-shadow:0 16px 40px rgba(0,0,0,0.3);border-radius:14px;overflow:hidden;padding:36px;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px">
+        <div>
+          <p class="eyebrow" style="color:var(--gold);font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">✦ Store Location & Navigation</p>
+          <h2 style="font-family:var(--ff-display);font-size:clamp(26px,3.8vw,36px);color:#FFFFFF;margin:0;line-height:1.25;text-shadow:0 2px 10px rgba(0,0,0,0.5)">
+            Find <span style="color:var(--gold);border-bottom:2px solid var(--gold);padding-bottom:2px">Rinky Jewellers</span> on Google Maps
+          </h2>
+          <p style="color:#E8E0D0;font-size:15px;margin-top:8px;font-weight:500">
+            <i class="fas fa-map-marker-alt" style="color:var(--gold);margin-right:6px"></i> Awas Vikas Colony, Kanpur, Uttar Pradesh – 208 022
+          </p>
+        </div>
+        <a href="https://share.google/wYAWqkxLuFsukUtnW" target="_blank" rel="noopener" class="btn btn-gold btn-lg" style="display:inline-flex;align-items:center;gap:10px;font-weight:700">
+          <i class="fas fa-directions" style="font-size:18px"></i> Open Google Maps Navigation
+        </a>
+      </div>
+      <div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid rgba(200,169,110,0.25);min-height:380px;box-shadow:inset 0 0 20px rgba(0,0,0,0.3)">
+        <iframe src="https://maps.google.com/maps?q=Rinky+Jewellers+Awas+Vikas+Kanpur&t=&z=16&ie=UTF8&iwloc=&output=embed" width="100%" height="380" style="border:0;filter:contrast(1.05);" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+// Pre-fill form if user is logged in
+(async () => {
+  const state = await getAuthState();
+  if (state.loggedIn) {
+    document.getElementById('cName').value  = state.user.name  || '';
+    document.getElementById('cEmail').value = state.user.email || '';
+    document.getElementById('cPhone').value = state.user.phone || '';
+  }
+})();
+
+document.getElementById('contactForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const succ = document.getElementById('formSuccess');
+  const err  = document.getElementById('formError');
+  const btn  = document.getElementById('submitBtn');
+  succ.classList.remove('show'); err.classList.remove('show');
+
+  const name    = document.getElementById('cName').value.trim();
+  const email   = document.getElementById('cEmail').value.trim();
+  const phone   = document.getElementById('cPhone').value.trim();
+  const message = document.getElementById('cMsg').value.trim();
+
+  if (!name)                           { showFAlert(err, 'Please enter your name.'); return; }
+  if (!email || !/\S+@\S+\.\S+/.test(email)) { showFAlert(err, 'Please enter a valid email.'); return; }
+  if (message.length < 10)            { showFAlert(err, 'Message must be at least 10 characters.'); return; }
+
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Sending...';
+
+  try {
+    const r = await fetch('/api/contact', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, email, phone, message })
+    });
+    const d = await r.json();
+    if (d.success) {
+      succ.classList.add('show');
+      succ.querySelector('span').textContent = d.message;
+      document.getElementById('contactForm').reset();
+      showToast('Message sent!', 'success');
+    } else {
+      showFAlert(err, d.message);
+    }
+  } catch { showFAlert(err, 'Server error. Please try again.'); }
+
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Send Message';
+});
+
+function showFAlert(el, msg) {
+  el.classList.add('show');
+  el.querySelector('span').textContent = msg;
+}
+</script>
+</body>
+</html>

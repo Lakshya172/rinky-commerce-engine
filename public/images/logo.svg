@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <!-- Royal Gold Gradients -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEBB0"/>
+      <stop offset="30%" stop-color="#E2B755"/>
+      <stop offset="70%" stop-color="#C59B27"/>
+      <stop offset="100%" stop-color="#936D12"/>
+    </linearGradient>
+    <linearGradient id="goldLight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="50%" stop-color="#FFF2C6"/>
+      <stop offset="100%" stop-color="#AA7A1E"/>
+    </linearGradient>
+    <linearGradient id="goldGlow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FFF5D1"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#subtleGlow)">
+    <!-- ══════════ CROWN (TOP) ══════════ -->
+    <g transform="translate(250, 115) scale(0.95)">
+      <!-- Top Cross / Finial -->
+      <path d="M-3,-68 L3,-68 L3,-62 L8,-62 L8,-56 L3,-56 L3,-48 L-3,-48 L-3,-56 L-8,-56 L-8,-62 L-3,-62 Z" fill="url(#goldLight)"/>
+      <circle cx="0" cy="-68" r="3.5" fill="#FFF2C6"/>
+
+      <!-- Crown Orb -->
+      <ellipse cx="0" cy="-44" rx="7" ry="5.5" fill="url(#goldGrad)"/>
+
+      <!-- Crown Arches & Velvet Cap (Dark Silhouette) -->
+      <path d="M-42,-12 C-40,-38 -20,-48 0,-48 C20,-48 40,-38 42,-12 Z" fill="#0C0A07" stroke="url(#goldGrad)" stroke-width="2"/>
+
+      <!-- Golden Arches Ribs -->
+      <path d="M0,-48 Q0,-25 0,-12" stroke="url(#goldLight)" stroke-width="3.5" fill="none"/>
+      <path d="M0,-46 Q-22,-36 -32,-12" stroke="url(#goldLight)" stroke-width="3" fill="none"/>
+      <path d="M0,-46 Q22,-36 32,-12" stroke="url(#goldLight)" stroke-width="3" fill="none"/>
+      
+      <!-- Pearls on Arches -->
+      <circle cx="-16" cy="-36" r="2.2" fill="#FFF8E7"/>
+      <circle cx="16" cy="-36" r="2.2" fill="#FFF8E7"/>
+      <circle cx="-28" cy="-24" r="2.2" fill="#FFF8E7"/>
+      <circle cx="28" cy="-24" r="2.2" fill="#FFF8E7"/>
+
+      <!-- Fleur-de-lis / Crown Peaks -->
+      <!-- Center Fleur -->
+      <path d="M0,-24 C-4,-20 -7,-16 -7,-12 C-7,-8 0,-7 0,-7 C0,-7 7,-8 7,-12 C7,-16 4,-20 0,-24 Z" fill="url(#goldLight)"/>
+      <circle cx="0" cy="-25" r="3" fill="#FFFFFF"/>
+
+      <!-- Left Peak 1 -->
+      <path d="M-22,-20 C-25,-17 -27,-14 -27,-11 C-27,-8 -22,-8 -22,-8 C-22,-8 -17,-8 -17,-11 C-17,-14 -19,-17 -22,-20 Z" fill="url(#goldLight)"/>
+      <circle cx="-22" cy="-21" r="2.5" fill="#FFFFFF"/>
+
+      <!-- Right Peak 1 -->
+      <path d="M22,-20 C19,-17 17,-14 17,-11 C17,-8 22,-8 22,-8 C22,-8 27,-8 27,-11 C27,-14 25,-17 22,-20 Z" fill="url(#goldLight)"/>
+      <circle cx="22" cy="-21" r="2.5" fill="#FFFFFF"/>
+
+      <!-- Far Left Peak -->
+      <path d="M-42,-16 C-44,-14 -46,-11 -46,-9 C-46,-7 -42,-7 -42,-7 C-42,-7 -38,-7 -38,-9 C-38,-11 -40,-14 -42,-16 Z" fill="url(#goldLight)"/>
+      <circle cx="-42" cy="-17" r="2" fill="#FFFFFF"/>
+
+      <!-- Far Right Peak -->
+      <path d="M42,-16 C40,-14 38,-11 38,-9 C38,-7 42,-7 42,-7 C42,-7 46,-7 46,-9 C46,-11 44,-14 42,-16 Z" fill="url(#goldLight)"/>
+      <circle cx="42" cy="-17" r="2" fill="#FFFFFF"/>
+
+      <!-- Crown Base Band -->
+      <rect x="-46" y="-8" width="92" height="12" rx="3" fill="url(#goldGrad)" stroke="url(#goldLight)" stroke-width="1"/>
+      
+      <!-- Jewels on Crown Band -->
+      <circle cx="-36" cy="-2" r="2.5" fill="#FFFFFF"/>
+      <polygon points="-24,-5 -20,-2 -24,1 -28,-2" fill="#900C3F"/>
+      <circle cx="-12" cy="-2" r="2.5" fill="#FFFFFF"/>
+      <polygon points="0,-6 4,-2 0,2 -4,-2" fill="#154360"/>
+      <circle cx="12" cy="-2" r="2.5" fill="#FFFFFF"/>
+      <polygon points="24,-5 28,-2 24,1 20,-2" fill="#900C3F"/>
+      <circle cx="36" cy="-2" r="2.5" fill="#FFFFFF"/>
+
+      <!-- Ermine Base Trim -->
+      <path d="M-48,4 Q0,10 48,4 L46,8 Q0,13 -46,8 Z" fill="url(#goldLight)"/>
+    </g>
+
+    <!-- ══════════ LAUREL WREATH & CIRCLE ══════════ -->
+    <g transform="translate(250, 235)">
+      <!-- Outer & Inner Rings -->
+      <circle cx="0" cy="0" r="102" fill="none" stroke="url(#goldGrad)" stroke-width="3.5"/>
+      <circle cx="0" cy="0" r="92" fill="#0A0806" stroke="url(#goldLight)" stroke-width="2"/>
+      
+      <!-- Laurel Leaves — Left Branch -->
+      <g fill="url(#goldLight)" stroke="url(#goldGrad)" stroke-width="0.6">
+        <!-- Bottom Left Leaves -->
+        <path d="M-15,96 C-25,98 -36,92 -36,92 C-36,92 -30,80 -20,84 Z"/>
+        <path d="M-30,95 C-42,93 -48,82 -48,82 C-48,82 -38,76 -30,83 Z"/>
+        <path d="M-46,84 C-58,78 -62,65 -62,65 C-62,65 -50,62 -42,72 Z"/>
+        <path d="M-58,70 C-70,61 -72,48 -72,48 C-72,48 -60,47 -52,58 Z"/>
+        <path d="M-68,52 C-80,40 -80,26 -80,26 C-80,26 -68,28 -62,40 Z"/>
+        <path d="M-76,32 C-87,18 -84,4 -84,4 C-84,4 -73,8 -69,21 Z"/>
+        <path d="M-80,10 C-90,-6 -84,-20 -84,-20 C-84,-20 -73,-14 -72,-1 Z"/>
+        <path d="M-80,-12 C-88,-28 -80,-42 -80,-42 C-80,-42 -70,-34 -72,-21 Z"/>
+        <path d="M-75,-32 C-81,-48 -71,-60 -71,-60 C-71,-60 -62,-51 -66,-39 Z"/>
+        <path d="M-65,-50 C-70,-66 -58,-76 -58,-76 C-58,-76 -50,-68 -56,-56 Z"/>
+        <path d="M-52,-66 C-54,-80 -40,-88 -40,-88 C-40,-88 -35,-79 -42,-70 Z"/>
+        <path d="M-36,-79 C-35,-92 -20,-98 -20,-98 C-20,-98 -17,-88 -26,-81 Z"/>
+
+        <!-- Laurel Leaves — Right Branch -->
+        <path d="M15,96 C25,98 36,92 36,92 C36,92 30,80 20,84 Z"/>
+        <path d="M30,95 C42,93 48,82 48,82 C48,82 38,76 30,83 Z"/>
+        <path d="M46,84 C58,78 62,65 62,65 C62,65 50,62 42,72 Z"/>
+        <path d="M58,70 C70,61 72,48 72,48 C72,48 60,47 52,58 Z"/>
+        <path d="M68,52 C80,40 80,26 80,26 C80,26 68,28 62,40 Z"/>
+        <path d="M76,32 C87,18 84,4 84,4 C84,4 73,8 69,21 Z"/>
+        <path d="M80,10 C90,-6 84,-20 84,-20 C84,-20 73,-14 72,-1 Z"/>
+        <path d="M80,-12 C88,-28 80,-42 80,-42 C80,-42 70,-34 72,-21 Z"/>
+        <path d="M75,-32 C81,-48 71,-60 71,-60 C71,-60 62,-51 66,-39 Z"/>
+        <path d="M65,-50 C70,-66 58,-76 58,-76 C58,-76 50,-68 56,-56 Z"/>
+        <path d="M52,-66 C54,-80 40,-88 40,-88 C40,-88 35,-79 42,-70 Z"/>
+        <path d="M36,-79 C35,-92 20,-98 20,-98 C20,-98 17,-88 26,-81 Z"/>
+
+        <!-- Bottom Ribbon Tie -->
+        <path d="M-10,96 C-4,104 4,104 10,96 C6,108 -6,108 -10,96 Z" fill="url(#goldLight)"/>
+        <circle cx="0" cy="98" r="4" fill="#FFF5D1"/>
+      </g>
+
+      <!-- ══════════ "RJ" MONOGRAM TEXT ══════════ -->
+      <text x="0" y="32" font-family="'Playfair Display', 'Cinzel', 'Times New Roman', serif" font-size="94" font-weight="700" fill="url(#goldLight)" text-anchor="middle" letter-spacing="4" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.8))">RJ</text>
+    </g>
+
+    <!-- ══════════ "RINKY JEWELLERS" WORDMARK ══════════ -->
+    <text x="250" y="395" font-family="'Cinzel', 'Playfair Display', 'DM Sans', serif" font-size="28" font-weight="700" fill="url(#goldLight)" text-anchor="middle" letter-spacing="9" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.9))">RINKY JEWELLERS</text>
+  </g>
+</svg>

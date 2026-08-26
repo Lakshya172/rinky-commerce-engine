@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Verification – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<div class="auth-page">
+  <div class="auth-card" style="text-align: center;">
+    <img src="/images/logo-icon.svg" style="width:58px;height:58px;margin:0 auto 12px;display:block;filter:drop-shadow(0 2px 8px rgba(200,169,110,0.5))" alt="Logo" />
+    <h2 id="verifyTitle">Verifying...</h2>
+    <span class="eyebrow">Rinky Jewellers</span>
+    
+    <div id="verifyIcon" style="font-size: 48px; margin: 20px 0;">
+      <i class="fas fa-spinner fa-spin" style="color:var(--gold)"></i>
+    </div>
+
+    <p id="verifyMessage" style="font-size:16px; color:var(--text); margin-bottom: 30px;">
+      Please wait while we verify your email address.
+    </p>
+
+    <a href="/login" class="btn btn-gold btn-full" id="loginBtn" style="display:none; margin: 0 auto; max-width: 200px;">
+      <span>Go to Login</span>
+    </a>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('status');
+  const message = params.get('message');
+  
+  const titleEl = document.getElementById('verifyTitle');
+  const iconEl = document.getElementById('verifyIcon');
+  const msgEl = document.getElementById('verifyMessage');
+  const loginBtn = document.getElementById('loginBtn');
+
+  if (status === 'success') {
+    titleEl.textContent = 'Email Verified!';
+    iconEl.innerHTML = '<i class="fas fa-check-circle" style="color:var(--green)"></i>';
+    msgEl.textContent = 'Your email address has been successfully verified. You can now log in to your account.';
+    loginBtn.style.display = 'inline-block';
+  } else if (status === 'error') {
+    titleEl.textContent = 'Verification Failed';
+    iconEl.innerHTML = '<i class="fas fa-times-circle" style="color:var(--red)"></i>';
+    msgEl.textContent = message || 'An error occurred while verifying your email.';
+    loginBtn.style.display = 'inline-block';
+  } else {
+    // Should not happen as the backend redirects here with status
+    titleEl.textContent = 'Unknown Status';
+    iconEl.innerHTML = '<i class="fas fa-question-circle" style="color:var(--text-muted)"></i>';
+    msgEl.textContent = 'No verification status provided.';
+  }
+});
+</script>
+</body>
+</html>

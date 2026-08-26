@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login / Sign Up – Rinky Jewellers</title>
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="apple-touch-icon" href="/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <img src="/images/logo-icon.svg" style="width:58px;height:58px;margin:0 auto 12px;display:block;filter:drop-shadow(0 2px 8px rgba(200,169,110,0.5))" alt="Logo" />
+    <h2>Welcome Back</h2>
+    <span class="eyebrow">Rinky Jewellers</span>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Login</button>
+      <button class="auth-tab" data-tab="signup">Create Account</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form class="auth-form active" id="loginForm" data-form="login" novalidate>
+      <div class="form-alert form-alert-error" id="loginAlert"><i class="fas fa-exclamation-circle"></i><span></span></div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email Address</label>
+        <input class="form-input" id="loginEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label class="form-label" for="loginPwd">Password</label>
+          <a href="/forgot-password" style="font-size:12px; color:var(--gold); font-weight:600; text-decoration:none;">Forgot Password?</a>
+        </div>
+        <div class="password-wrap">
+          <input class="form-input" id="loginPwd" name="password" type="password" placeholder="••••••••" required autocomplete="current-password" />
+          <i class="fas fa-eye toggle-pwd"></i>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="rememberMe" name="remember" />
+        <label for="rememberMe">Remember me</label>
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-full" id="loginBtn">
+        <span>Login to Account</span>
+      </button>
+
+      <p class="auth-switch">Don't have an account? <a href="#" data-switch="signup">Sign Up</a></p>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form class="auth-form" id="signupForm" data-form="signup" novalidate>
+      <div class="form-alert form-alert-error" id="signupAlert"><i class="fas fa-exclamation-circle"></i><span></span></div>
+      <div class="form-alert form-alert-success" id="signupSuccess"><i class="fas fa-check-circle"></i><span></span></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="signupName">Full Name</label>
+          <input class="form-input" id="signupName" name="name" type="text" placeholder="Priya Sharma" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signupPhone">Phone (optional)</label>
+          <input class="form-input" id="signupPhone" name="phone" type="tel" placeholder="+91 98397 21897" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="signupEmail">Email Address</label>
+        <input class="form-input" id="signupEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="signupPwd">Password</label>
+        <div class="password-wrap">
+          <input class="form-input" id="signupPwd" name="password" type="password" placeholder="At least 6 characters" required autocomplete="new-password" />
+          <i class="fas fa-eye toggle-pwd"></i>
+        </div>
+        <p class="form-hint">Minimum 6 characters</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="signupPwd2">Confirm Password</label>
+        <div class="password-wrap">
+          <input class="form-input" id="signupPwd2" name="confirm" type="password" placeholder="Repeat password" required autocomplete="new-password" />
+          <i class="fas fa-eye toggle-pwd"></i>
+        </div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="agreeTerms" required />
+        <label for="agreeTerms">I agree to the <a href="#" style="color:var(--gold)">Terms & Conditions</a></label>
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-full" id="signupBtn">
+        <span>Create Account</span>
+      </button>
+
+      <p class="auth-switch">Already have an account? <a href="#" data-switch="login">Login</a></p>
+    </form>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+<script src="/js/navbar.js"></script>
+<script src="/js/shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  // Redirect if already logged in
+  const state = await getAuthState();
+  if (state.loggedIn) { window.location.href = '/'; return; }
+
+  // Check URL param to pre-select tab
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'signup') switchTab('signup');
+
+  // Tab switching
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+  document.querySelectorAll('[data-switch]').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); switchTab(a.dataset.switch); });
+  });
+
+  function switchTab(t) {
+    document.querySelectorAll('.auth-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.toggle('active', f.dataset.form === t));
+    document.querySelector('h2').textContent = t === 'login' ? 'Welcome Back' : 'Create Account';
+  }
+
+  // ── LOGIN ──
+  document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn  = document.getElementById('loginBtn');
+    const alert = document.getElementById('loginAlert');
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPwd').value;
+
+    if (!email || !password) { showAlert(alert, 'Please fill in all fields.'); return; }
+
+    setLoading(btn, true);
+    try {
+      const r = await fetch('/api/auth/login', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password })
+      });
+      const d = await r.json();
+      if (d.success) {
+        clearAuthState();
+        showToast('Logged in! Welcome back.', 'success');
+        setTimeout(() => {
+          const redir = params.get('redirect') || '/';
+          window.location.href = redir;
+        }, 700);
+      } else {
+        showAlert(alert, d.message);
+      }
+    } catch { showAlert(alert, 'Server error. Please try again.'); }
+    setLoading(btn, false);
+  });
+
+  // ── SIGNUP ──
+  document.getElementById('signupForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn  = document.getElementById('signupBtn');
+    const alert = document.getElementById('signupAlert');
+    const succ = document.getElementById('signupSuccess');
+
+    const name    = document.getElementById('signupName').value.trim();
+    const phone   = document.getElementById('signupPhone').value.trim();
+    const email   = document.getElementById('signupEmail').value.trim();
+    const pwd     = document.getElementById('signupPwd').value;
+    const pwd2    = document.getElementById('signupPwd2').value;
+    const agreed  = document.getElementById('agreeTerms').checked;
+
+    succ.classList.remove('show');
+    if (!name || !email || !pwd) { showAlert(alert, 'Please fill all required fields.'); return; }
+    if (pwd !== pwd2)            { showAlert(alert, 'Passwords do not match.'); return; }
+    if (pwd.length < 6)          { showAlert(alert, 'Password must be at least 6 characters.'); return; }
+    if (!agreed)                 { showAlert(alert, 'Please accept the Terms & Conditions.'); return; }
+
+    setLoading(btn, true);
+    try {
+      const r = await fetch('/api/auth/signup', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, email, password: pwd, phone })
+      });
+      const d = await r.json();
+      if (d.success) {
+        alert.classList.remove('show');
+        succ.classList.add('show');
+        succ.querySelector('span').textContent = d.message;
+        clearAuthState();
+        showToast('Account created! Please check your email to verify.', 'success');
+        document.getElementById('signupForm').reset();
+        setTimeout(() => switchTab('login'), 3000);
+      } else {
+        showAlert(alert, d.message);
+      }
+    } catch { showAlert(alert, 'Server error. Please try again.'); }
+    setLoading(btn, false);
+  });
+
+  function showAlert(el, msg) {
+    el.classList.add('show');
+    el.querySelector('span').textContent = msg;
+  }
+
+  function setLoading(btn, loading) {
+    btn.disabled = loading;
+    if (!btn.hasAttribute('data-label')) {
+      btn.setAttribute('data-label', btn.querySelector('span').textContent);
+    }
+    btn.querySelector('span').textContent = loading ? 'Please wait...' : btn.getAttribute('data-label');
+  }
+});
+</script>
+</body>
+</html>
