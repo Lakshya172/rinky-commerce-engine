@@ -25,25 +25,44 @@ mongoose.connect(MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB connected');
     try {
-      // Bootstrap the admin account from env vars. Skipped entirely when they
-      // are not set, so no known-credential account can exist by accident.
-      const ADMIN_EMAIL    = process.env.ADMIN_EMAIL;
-      const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+      // Bootstrap admin accounts from numbered env slots: ADMIN_*, ADMIN2_*,
+      // ADMIN3_* and so on. A slot is used only when both its email and its
+      // password are set, so no known-credential account appears by accident.
+      // Existing users are never modified — to rotate a password, use the admin
+      // panel or delete the user and restart.
+      const adminSlots = ['ADMIN', 'ADMIN2', 'ADMIN3', 'ADMIN4', 'ADMIN5'];
+      let bootstrapped = 0;
 
-      if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-        console.warn('⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin bootstrap.');
-      } else {
-        const adminExists = await User.findOne({ email: ADMIN_EMAIL });
-        if (!adminExists) {
-          await User.create({
-            name: process.env.ADMIN_NAME || 'Administrator',
-            email: ADMIN_EMAIL,
-            password: ADMIN_PASSWORD,
-            role: 'admin',
-            isVerified: true
-          });
-          console.log(`✅ Admin account created for ${ADMIN_EMAIL}.`);
+      for (const slot of adminSlots) {
+        const email    = process.env[`${slot}_EMAIL`];
+        const password = process.env[`${slot}_PASSWORD`];
+        if (!email || !password) continue;
+
+        bootstrapped++;
+        const existing = await User.findOne({ email: email.toLowerCase() });
+        if (existing) {
+          // Make sure a pre-existing account named in a slot really is an admin.
+          if (existing.role !== 'admin') {
+            existing.role = 'admin';
+            existing.isVerified = true;
+            await existing.save();
+            console.log(`✅ Promoted ${email} to admin.`);
+          }
+          continue;
         }
+
+        await User.create({
+          name: process.env[`${slot}_NAME`] || 'Administrator',
+          email,
+          password,
+          role: 'admin',
+          isVerified: true
+        });
+        console.log(`✅ Admin account created for ${email}.`);
+      }
+
+      if (bootstrapped === 0) {
+        console.warn('⚠️  No ADMIN_EMAIL / ADMIN_PASSWORD pair set — skipping admin bootstrap.');
       }
 
       // Auto-seed sample products if none exist
