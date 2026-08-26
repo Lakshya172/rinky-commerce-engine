@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Private / account pages — no value in search results
+Disallow: /admin
+Disallow: /profile
+Disallow: /wishlist
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /api/
+
+Sitemap: https://www.rinkyjewellers.in/sitemap.xml

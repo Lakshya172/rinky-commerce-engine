@@ -259,6 +259,55 @@ app.use('/api/contact',  require('./routes/contact'));
 app.use('/api/admin',    require('./routes/admin'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 
+// ── SEO: sitemap ──────────────────────────────────────────────────────────────
+const SITE_URL = (process.env.BASE_URL || 'https://www.rinkyjewellers.in').replace(/\/+$/, '');
+
+const sitemapUrl = (loc, lastmod, changefreq, priority) => [
+  '  <url>',
+  `    <loc>${loc}</loc>`,
+  `    <lastmod>${lastmod}</lastmod>`,
+  `    <changefreq>${changefreq}</changefreq>`,
+  `    <priority>${priority}</priority>`,
+  '  </url>'
+].join('\n');
+
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const staticPages = [
+      { loc: '/',         changefreq: 'weekly',  priority: '1.0' },
+      { loc: '/products', changefreq: 'weekly',  priority: '0.9' },
+      { loc: '/about',    changefreq: 'monthly', priority: '0.6' },
+      { loc: '/contact',  changefreq: 'monthly', priority: '0.6' }
+    ];
+
+    const products = await Product.find({ inStock: true })
+      .select('_id updatedAt')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    const urls = [
+      ...staticPages.map(p => sitemapUrl(SITE_URL + p.loc, today, p.changefreq, p.priority)),
+      ...products.map(p => sitemapUrl(
+        `${SITE_URL}/product?id=${p._id}`,
+        new Date(p.updatedAt || Date.now()).toISOString().split('T')[0],
+        'weekly',
+        '0.8'
+      ))
+    ].join('\n');
+
+    res.type('application/xml').send([
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      urls,
+      '</urlset>'
+    ].join('\n'));
+  } catch (err) {
+    res.status(500).type('text/plain').send('Failed to build sitemap.');
+  }
+});
+
 // ── Health check (Render pings this) ──────────────────────────────────────────
 app.get('/healthz', (req, res) => {
   const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
