@@ -1,188 +1,478 @@
-# 💍 Rinky Commerce Engine
+# Rinky Commerce Engine
 
-> *Elegance You Can Wear* — the storefront for Rinky Jewellers, Awas Vikas, Kanpur.
+**Production Full-Stack Commerce Platform for Rinky Jewellers**
 
-A full-stack commerce engine architected with Node.js, Express, REST APIs, role-based access
-control, authentication workflows, MongoDB Atlas, admin product CRUD, customer wishlists and
-orders, and Brevo-powered transactional email verification.
+> A production-oriented e-commerce platform engineered for Rinky Jewellers, Kanpur, with a focus on scalable backend architecture, secure authentication, role-based access control, database-driven product management, and a responsive customer-facing experience.
 
-Node.js + Express + MongoDB, with a server-rendered-free frontend: plain HTML, CSS and
-vanilla JS, no build step and no framework.
+**Live Application:** https://www.rinkyjewellers.in/
 
 ---
 
-## Stack
+## Overview
 
-| Layer      | Choice                                                        |
-|------------|---------------------------------------------------------------|
-| Runtime    | Node.js 18+ (uses the global `fetch`)                          |
-| Server     | Express 4                                                      |
-| Database   | MongoDB via Mongoose 8                                         |
-| Sessions   | `express-session` + `connect-mongo` (server-side, 7 days)      |
-| Passwords  | `bcryptjs`, 12 salt rounds                                     |
-| Email      | Brevo transactional API                                        |
-| Security   | `helmet`, `express-rate-limit`                                 |
-| Frontend   | Static HTML in `views/`, shared JS in `public/js/`             |
+**Rinky Commerce Engine** is a full-stack commerce platform designed and developed to provide Rinky Jewellers with a complete digital storefront and centralized product management system.
+
+The application was engineered end-to-end, covering **frontend development, REST API design, authentication, authorization, database architecture, session management, transactional email workflows, security middleware, administrative operations, and cloud deployment**.
+
+The platform follows a lightweight architecture with a **Node.js + Express backend**, **MongoDB Atlas persistence layer**, and a **framework-free frontend built with HTML, CSS, and vanilla JavaScript**.
+
+The system is intentionally implemented without a frontend build pipeline, keeping the client lightweight, maintainable, and easy to deploy.
 
 ---
 
-## Project structure
+## Engineering Highlights
 
+* Designed and implemented a **RESTful backend architecture** using Node.js and Express
+* Built secure **user authentication and account-management workflows**
+* Implemented **role-based authorization** for administrative operations
+* Designed MongoDB schemas using **Mongoose**
+* Implemented persistent **server-side sessions** using MongoDB
+* Developed administrative APIs for **product, user, and message management**
+* Built customer **wishlist functionality** with authenticated API access
+* Integrated **Brevo Transactional Email API** for email verification and password recovery
+* Implemented security controls using **Helmet and rate limiting**
+* Added production health monitoring through a dedicated `/healthz` endpoint
+* Configured production deployment using **Render**
+* Integrated **MongoDB Atlas** as the cloud database layer
+* Built a responsive frontend without React, Vue, Angular, or other frontend frameworks
+* Structured shared client functionality into reusable JavaScript modules
+* Designed the system with maintainability and future commerce functionality in mind
+
+---
+
+## Technology Stack
+
+| Layer             | Technology                        |
+| ----------------- | --------------------------------- |
+| Runtime           | Node.js 18+                       |
+| Backend           | Express.js 4                      |
+| API               | REST                              |
+| Database          | MongoDB Atlas                     |
+| ODM               | Mongoose 8                        |
+| Authentication    | Session-based Authentication      |
+| Session Store     | express-session + connect-mongo   |
+| Password Security | bcryptjs                          |
+| Email             | Brevo Transactional API           |
+| Security          | Helmet + express-rate-limit       |
+| Frontend          | HTML5 + CSS3 + Vanilla JavaScript |
+| Deployment        | Render                            |
+| Version Control   | Git + GitHub                      |
+
+---
+
+## System Architecture
+
+```text
+                        ┌─────────────────────┐
+                        │      Client         │
+                        │ HTML / CSS / JS     │
+                        └──────────┬──────────┘
+                                   │
+                                   ▼
+                        ┌─────────────────────┐
+                        │     Express.js      │
+                        │   REST API Layer    │
+                        └──────────┬──────────┘
+                                   │
+                ┌──────────────────┼──────────────────┐
+                │                  │                  │
+                ▼                  ▼                  ▼
+        ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+        │ Authentication│   │   Products   │   │    Admin     │
+        │ & Sessions    │   │ & Wishlist   │   │   Services   │
+        └──────────────┘   └──────────────┘   └──────────────┘
+                │                  │                  │
+                └──────────────────┼──────────────────┘
+                                   ▼
+                        ┌─────────────────────┐
+                        │    Mongoose ODM     │
+                        └──────────┬──────────┘
+                                   │
+                                   ▼
+                        ┌─────────────────────┐
+                        │    MongoDB Atlas    │
+                        └─────────────────────┘
+
+                        External Services
+                              │
+                 ┌────────────┴────────────┐
+                 ▼                         ▼
+          ┌──────────────┐          ┌──────────────┐
+          │    Brevo     │          │    Render    │
+          │ Email API    │          │   Hosting    │
+          └──────────────┘          └──────────────┘
 ```
-├── app.js                  # Entry point: DB, sessions, security, routing
-├── render.yaml             # Render blueprint
+
+---
+
+## Project Structure
+
+```text
+Rinky-Commerce-Engine/
+│
+├── app.js
+├── render.yaml
+├── package.json
+├── .env.example
 │
 ├── models/
-│   ├── User.js             # Auth, wishlist, cart, verify/reset tokens
-│   ├── Product.js          # Catalogue item (+ BIS hallmark fields)
-│   ├── Order.js            # Order + shipping + Razorpay fields  ⚠️ not yet wired
-│   └── Contact.js          # Contact-form message
+│   ├── User.js
+│   ├── Product.js
+│   ├── Order.js
+│   └── Contact.js
 │
 ├── routes/
-│   ├── auth.js             # signup, verify, login, logout, profile, passwords
-│   ├── products.js         # public catalogue read
-│   ├── wishlist.js         # toggle & fetch (auth required)
-│   ├── contact.js          # contact-form submission
-│   └── admin.js            # product/message/user management (admin only)
+│   ├── auth.js
+│   ├── products.js
+│   ├── wishlist.js
+│   ├── contact.js
+│   └── admin.js
 │
-├── middleware/auth.js      # requireAuth, requireAdmin
-├── utils/mailer.js         # Brevo verification & reset emails
+├── middleware/
+│   └── auth.js
 │
-├── views/                  # 15 static HTML pages served by path
+├── utils/
+│   └── mailer.js
+│
+├── views/
+│   └── *.html
+│
 └── public/
-    ├── css/style.css       # Design system (~2.5k lines)
+    ├── css/
+    │   └── style.css
+    │
     └── js/
-        ├── shared.js       # Auth state, toasts, wishlist, cards, transitions
-        └── navbar.js       # Injects navbar + footer into every page
+        ├── shared.js
+        └── navbar.js
 ```
 
 ---
 
-## Local setup
+## Core Modules
 
-**1. Install**
+### Authentication & Authorization
+
+The authentication layer provides complete account-management workflows:
+
+* User registration
+* Email verification
+* Secure login/logout
+* Session persistence
+* Profile management
+* Password change
+* Password reset
+* Role-based authorization
+* Admin access control
+
+Passwords are protected using **bcrypt hashing with 12 salt rounds** and are never exposed through API responses.
+
+---
+
+### Product Management
+
+The product service provides:
+
+* Public product catalogue
+* Product detail retrieval
+* Search functionality
+* Category filtering
+* Featured products
+* Administrative product creation
+* Product deletion
+* Featured-status management
+* Product seeding
+
+The product model also supports jewellery-specific metadata, including **BIS hallmark-related fields**.
+
+---
+
+### Wishlist System
+
+Authenticated customers can manage their personal wishlist through protected REST endpoints.
+
+```text
+GET    /api/wishlist
+POST   /api/wishlist/:productId
+```
+
+Authorization middleware ensures wishlist operations are available only to authenticated users.
+
+---
+
+### Administrative Platform
+
+The administrative API provides centralized management capabilities for:
+
+* Products
+* Users
+* Contact messages
+* Platform statistics
+* Featured products
+* User account management
+* Password reset administration
+
+All administrative routes are protected at the router level using dedicated authorization middleware.
+
+---
+
+### Transactional Email
+
+The platform integrates **Brevo's transactional email API** for:
+
+* Email verification
+* Password reset workflows
+
+Email URLs are dynamically generated using the configured production `BASE_URL`.
+
+---
+
+## REST API
+
+### Authentication
+
+| Method | Endpoint                        | Access        |
+| ------ | ------------------------------- | ------------- |
+| POST   | `/api/auth/signup`              | Public        |
+| GET    | `/api/auth/verify-email/:token` | Public        |
+| POST   | `/api/auth/login`               | Public        |
+| POST   | `/api/auth/logout`              | Authenticated |
+| POST   | `/api/auth/forgot-password`     | Public        |
+| POST   | `/api/auth/reset-password`      | Public        |
+| GET    | `/api/auth/me`                  | Public        |
+| PUT    | `/api/auth/profile`             | Authenticated |
+| PUT    | `/api/auth/change-password`     | Authenticated |
+
+### Products
+
+| Method | Endpoint            | Access |
+| ------ | ------------------- | ------ |
+| GET    | `/api/products`     | Public |
+| GET    | `/api/products/:id` | Public |
+
+### Wishlist
+
+| Method | Endpoint                   | Access        |
+| ------ | -------------------------- | ------------- |
+| GET    | `/api/wishlist`            | Authenticated |
+| POST   | `/api/wishlist/:productId` | Authenticated |
+
+### Administration
+
+| Method | Endpoint                              | Access |
+| ------ | ------------------------------------- | ------ |
+| GET    | `/api/admin/stats`                    | Admin  |
+| GET    | `/api/admin/products`                 | Admin  |
+| GET    | `/api/admin/messages`                 | Admin  |
+| GET    | `/api/admin/users`                    | Admin  |
+| POST   | `/api/admin/products`                 | Admin  |
+| POST   | `/api/admin/seed`                     | Admin  |
+| POST   | `/api/admin/users/:id/reset-password` | Admin  |
+| PATCH  | `/api/admin/products/:id/featured`    | Admin  |
+| DELETE | `/api/admin/products/:id`             | Admin  |
+| DELETE | `/api/admin/messages/:id`             | Admin  |
+| DELETE | `/api/admin/users/:id`                | Admin  |
+
+---
+
+## Security Engineering
+
+Security was treated as a core part of the application architecture rather than an afterthought.
+
+### Implemented
+
+* **bcrypt password hashing**
+* **HTTP-only session cookies**
+* **SameSite cookie protection**
+* **Secure cookies in production**
+* **MongoDB-backed sessions**
+* **Role-based authorization**
+* **Admin route protection**
+* **Email verification**
+* **Password-reset token workflows**
+* **Helmet security middleware**
+* **IP-based API rate limiting**
+* Environment-based secret management
+* No credentials committed to source control
+
+Credential-sensitive endpoints are rate limited to reduce brute-force and abuse scenarios.
+
+### Security Consideration
+
+Content Security Policy is currently disabled because the application uses external resources and inline scripts/styles. A stricter CSP can be introduced by migrating inline resources to approved external assets or nonce-based execution.
+
+---
+
+## Production Deployment
+
+The application is deployed as a production web service with:
+
+```text
+Frontend
+   ↓
+Express Application
+   ↓
+Render
+   ↓
+MongoDB Atlas
+```
+
+Production configuration includes:
+
+* Environment-based configuration
+* Secure cookies
+* Proxy-aware Express configuration
+* MongoDB Atlas connection
+* Production `BASE_URL`
+* Transactional email integration
+* Health monitoring
+
+### Health Check
+
+```http
+GET /healthz
+```
+
+Returns:
+
+```text
+200 → Application and MongoDB available
+503 → Database unavailable
+```
+
+---
+
+## Local Development
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd rinky-commerce-engine
+```
+
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-**2. Configure**
+### 3. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in `.env`. `SESSION_SECRET` is mandatory — the server exits on startup without it:
+Generate a secure session secret:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-**3. Start MongoDB**, then run:
+Configure MongoDB and required service credentials inside `.env`.
+
+### 4. Start the application
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000. On first boot the app seeds 8 sample products and — only if
-`ADMIN_EMAIL` and `ADMIN_PASSWORD` are set — creates the admin account.
+The application will be available at:
+
+```text
+http://localhost:3000
+```
 
 ---
 
-## Deploying to Render
+## Current Scope
 
-The repo ships a `render.yaml` blueprint. Point Render at this repository and it will pick up
-the build command, start command and health check automatically.
+The current production implementation includes:
 
-**Before the first deploy you must provision a database.** Render does not host MongoDB —
-create a free cluster on [MongoDB Atlas](https://www.mongodb.com/atlas), allow access from
-`0.0.0.0/0` (Render's outbound IPs are not static on the free plan), and use its SRV
-connection string as `MONGO_URI`. A `localhost` URI will fail and the app will exit.
+* Customer-facing storefront
+* Product catalogue
+* Product search and filtering
+* User authentication
+* Email verification
+* Password recovery
+* User profiles
+* Wishlist management
+* Admin dashboard
+* Product administration
+* User administration
+* Contact management
+* Transactional email
+* Production deployment
+* Security middleware
 
-Set these in the Render dashboard under **Environment**:
+### Future Engineering Roadmap
 
-| Variable             | Notes                                                        |
-|----------------------|--------------------------------------------------------------|
-| `NODE_ENV`           | `production` — enables secure cookies and proxy trust        |
-| `MONGO_URI`          | Atlas SRV string                                             |
-| `SESSION_SECRET`     | Generated for you by the blueprint                           |
-| `BASE_URL`           | Your live URL, e.g. `https://<service>.onrender.com`         |
-| `BREVO_API_KEY`      | From the Brevo dashboard                                     |
-| `BREVO_SENDER_EMAIL` | Must be a verified sender in Brevo                           |
-| `BREVO_SENDER_NAME`  | Display name on outgoing mail                                |
-| `ADMIN_EMAIL`        | Bootstrap admin login                                        |
-| `ADMIN_PASSWORD`     | Use a strong, unique value                                   |
-| `ADMIN_NAME`         | Optional, defaults to `Administrator`                        |
+The architecture is prepared for future commerce capabilities, including:
 
-`BASE_URL` matters: verification and password-reset links are built from it, so if it is wrong
-those emails will point somewhere unreachable.
+* Shopping cart
+* Checkout workflow
+* Order management
+* Razorpay payment integration
+* Customer order history
+* Delivery/order tracking
+* Inventory management
+* Advanced analytics
+* Automated order notifications
 
-Health check: `GET /healthz` returns `200` when Mongo is connected, `503` otherwise.
-
-> **Free-plan note:** Render spins the service down after inactivity, so the first request
-> after an idle period takes a while to respond.
-
----
-
-## API
-
-### Pages
-
-| URL | Description |
-|-----|-------------|
-| `/` | Home — hero, categories, featured |
-| `/products` | Collection, with search and category filter |
-| `/product?id=X` | Product detail |
-| `/about`, `/contact` | Static content + contact form |
-| `/login`, `/signup` | Login / sign-up (tabbed; `/signup` redirects) |
-| `/profile`, `/wishlist` | Account pages (auth required) |
-| `/forgot-password`, `/reset-password`, `/verify-email` | Account recovery flows |
-| `/admin` | Admin dashboard (admin only) |
-
-### Endpoints
-
-| Method | Endpoint | Auth |
-|--------|----------|------|
-| POST | `/api/auth/signup` | — |
-| GET | `/api/auth/verify-email/:token` | — |
-| POST | `/api/auth/login` / `/logout` | — |
-| POST | `/api/auth/forgot-password` / `/reset-password` | — |
-| GET | `/api/auth/me` | — |
-| PUT | `/api/auth/profile` / `/change-password` | user |
-| GET | `/api/products` / `/api/products/:id` | — |
-| GET | `/api/wishlist` | user |
-| POST | `/api/wishlist/:productId` | user |
-| POST | `/api/contact` | — |
-| GET | `/api/admin/stats` / `/products` / `/messages` / `/users` | admin |
-| POST | `/api/admin/products` / `/seed` / `/users/:id/reset-password` | admin |
-| PATCH | `/api/admin/products/:id/featured` | admin |
-| DELETE | `/api/admin/products/:id` / `/messages/:id` / `/users/:id` | admin |
-
-The four credential endpoints are rate limited to 20 requests per IP per 15 minutes.
+> **Note:** Cart, checkout, and payment processing are not currently implemented. The existing `Order` model and Razorpay dependency represent planned infrastructure and should not be considered active production functionality.
 
 ---
 
-## Security notes
+## Engineering Decisions
 
-- Passwords are bcrypt-hashed (12 rounds) and never returned by any endpoint.
-- Sessions live in MongoDB; cookies are `httpOnly`, `sameSite=lax`, and `secure` in production.
-- `requireAdmin` guards every `/api/admin/*` route at the router level.
-- Unverified accounts cannot log in (admin accounts are exempt).
-- No secrets are committed — `.env` is gitignored; `.env.example` documents the shape.
+### Why Vanilla JavaScript?
 
-**Content-Security-Policy is currently disabled** in the helmet config. The pages pull fonts,
-scripts and images from Google Fonts, cdnjs, jsdelivr and Unsplash, and use inline scripts and
-styles throughout, so a meaningful policy needs those inlined or nonce'd first.
+The frontend intentionally avoids a framework and build system to keep the storefront lightweight and straightforward to deploy. Shared functionality is organized into reusable JavaScript modules rather than duplicated across pages.
 
----
+### Why MongoDB?
 
-## Not built yet
+MongoDB provides a flexible document-oriented data model suitable for catalogue-driven commerce applications while integrating cleanly with Node.js through Mongoose.
 
-Cart and checkout do not exist. `User.cart`, `models/Order.js` and the `razorpay` dependency
-are all present but **nothing references them** — there is no add-to-cart control, no cart
-page, no orders route and no payment flow. Treat that scaffolding as a starting point, not as
-working code.
+### Why Server-Side Sessions?
+
+Authentication uses server-side sessions backed by MongoDB, allowing session state to be centrally managed and invalidated without exposing authentication tokens to client-side JavaScript.
+
+### Why REST?
+
+REST APIs provide a clear separation between the presentation layer and backend services while keeping the architecture simple and extensible for future mobile clients or frontend frameworks.
 
 ---
 
-*Crafted for Rinky Jewellers, Awas Vikas, Kanpur.*
+## Project Status
+
+**Status:** Production
+
+**Deployment:** Live
+
+**Architecture:** Full-Stack REST API
+
+**Database:** MongoDB Atlas
+
+**Frontend:** Framework-free
+
+**Backend:** Node.js + Express
+
+---
+
+## Live Project
+
+**Rinky Jewellers**
+
+https://www.rinkyjewellers.in/
+
+---
+
+## Author
+
+**Lakshya Agarwal**
+
+Full-Stack Software Developer
+B.Tech Computer Science Engineering
+
+---
+
+> **Built as a real-world production project for Rinky Jewellers, Awas Vikas, Kanpur — from architecture and implementation to deployment.**
