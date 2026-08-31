@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Simplified brand mark for favicon sizes. The full crest is too fine to
+       read at 16px, and a dark icon vanishes against dark-mode search results,
+       so this inverts to a gold field with a dark monogram. -->
+  <defs>
+    <linearGradient id="fmGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F7E0A6"/>
+      <stop offset="45%" stop-color="#D8B978"/>
+      <stop offset="100%" stop-color="#B08F4A"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="256" cy="256" r="256" fill="url(#fmGold)"/>
+  <circle cx="256" cy="256" r="232" fill="none" stroke="#14100B" stroke-opacity="0.5" stroke-width="10"/>
+
+  <text x="256" y="258"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-weight="700"
+        font-size="268"
+        fill="#14100B">RJ</text>
+</svg>
