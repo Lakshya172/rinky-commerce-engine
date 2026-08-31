@@ -1,0 +1,27 @@
+{
+  "name": "Rinky Jewellers",
+  "short_name": "Rinky",
+  "description": "BIS hallmarked gold, diamond and polki jewellery in Kanpur.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0806",
+  "theme_color": "#0A0806",
+  "icons": [
+    {
+      "src": "/images/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
