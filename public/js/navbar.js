@@ -137,13 +137,13 @@ const FOOTER_HTML = `
         <div class="footer-contact-item">
           <i class="fas fa-map-marker-alt"></i>
           <span>
-            Awas Vikas Colony,<br>Kanpur, U.P. – 208 022<br>
+            Awas Vikas Colony,<br>Kanpur, U.P. – 208 021<br>
             <a href="https://share.google/wYAWqkxLuFsukUtnW" target="_blank" rel="noopener" style="color:var(--gold);font-size:12px;display:inline-flex;align-items:center;gap:4px;margin-top:4px">
               <i class="fas fa-directions"></i> Get Directions (Google Maps)
             </a>
           </span>
         </div>
-        <div class="footer-contact-item"><i class="fas fa-phone"></i><a href="tel:+919839721897" style="color:inherit;text-decoration:none">+91 98397 21897</a></div>
+        <div class="footer-contact-item"><i class="fas fa-phone"></i><a href="tel:+919839721896" style="color:inherit;text-decoration:none">+91 98397 21896</a></div>
         <div class="footer-contact-item"><i class="fas fa-envelope"></i><a href="mailto:rinkyjewellers0@gmail.com" style="color:inherit;text-decoration:none">rinkyjewellers0@gmail.com</a></div>
         <div class="footer-contact-item"><i class="fas fa-clock"></i><span>Mon–Sun: 11AM – 8PM (All Days)</span></div>
       </div>
