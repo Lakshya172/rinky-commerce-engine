@@ -146,29 +146,19 @@
             </div>
           </div>
           <div class="form-group" style="margin-bottom:16px">
-            <label class="form-label dark">Image Source *</label>
-            <div style="display:flex;gap:24px;margin-bottom:10px;align-items:center">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
-                <input type="radio" name="pImgSource" value="url" checked style="accent-color:var(--gold);width:16px;height:16px" />
-                Image Link (URL)
+            <label class="form-label dark">Product Images * <span class="img-count" id="addImgCount">0 / 4</span></label>
+            <div class="img-manager-grid" id="addImgGrid"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <input class="form-input light" id="addImgUrl" type="url" placeholder="Paste an image link (https://...)" style="flex:1;min-width:200px" />
+              <button type="button" class="btn btn-sm btn-outline" id="addImgUrlBtn">Add link</button>
+              <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">
+                <i class="fas fa-upload"></i> Upload
+                <input type="file" id="addImgFile" accept="image/*" multiple hidden />
               </label>
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
-                <input type="radio" name="pImgSource" value="upload" style="accent-color:var(--gold);width:16px;height:16px" />
-                Upload Image
-              </label>
             </div>
-            
-            <div id="imgUrlGroup">
-              <input class="form-input light" id="pImage" type="url" placeholder="https://images.unsplash.com/..." />
-            </div>
-            
-            <div id="imgUploadGroup" style="display:none">
-              <input class="form-input light" id="pImageFile" type="file" accept="image/*" style="padding:8px" />
-            </div>
-          </div>
-          <!-- Image Preview -->
-          <div id="imgPreviewWrap" style="margin-bottom:16px;display:none">
-            <img id="imgPreview" src="" alt="Preview" style="height:120px;width:120px;object-fit:cover;border-radius:6px;border:2px solid var(--gold)" />
+            <p style="font-size:11px;color:var(--text-muted);margin-top:6px">
+              At least 1 image, up to 4. The first image is the main photo shown on cards and search results.
+            </p>
           </div>
           <div class="form-group">
             <label class="form-label dark">Description</label>
@@ -209,6 +199,96 @@
 </section>
 
 <div id="footer-placeholder"></div>
+  <!-- ── Edit Product Modal ── -->
+  <div class="admin-modal" id="editModal" hidden>
+    <div class="admin-modal-box">
+      <div class="admin-modal-head">
+        <h3><i class="fas fa-pen" style="color:var(--gold)"></i> Edit Product</h3>
+        <button type="button" class="admin-modal-close" onclick="closeEditProduct()" aria-label="Close">&times;</button>
+      </div>
+      <div class="alert alert-error" id="editError"></div>
+      <form id="editProductForm">
+        <input type="hidden" id="eId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label dark">Product Name *</label>
+            <input class="form-input light" id="eName" type="text" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">Price (₹) *</label>
+            <input class="form-input light" id="ePrice" type="number" min="1" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label dark">Category *</label>
+            <input class="form-input light" id="eCategory" list="eCategoryList" type="text" required placeholder="Pick one or type a new name" />
+            <datalist id="eCategoryList"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">Jewelry Type *</label>
+            <select class="form-input light" id="eJewelryType">
+              <option value="Gold">Gold</option>
+              <option value="Silver">Silver</option>
+              <option value="Artificial">Artificial</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label dark">Material</label>
+            <input class="form-input light" id="eMaterial" type="text" />
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">Weight</label>
+            <input class="form-input light" id="eWeight" type="text" />
+          </div>
+        </div>
+        <div class="form-row" id="eHallmarkRow" style="margin-bottom:16px">
+          <div class="form-group">
+            <label class="form-label dark">BIS Hallmarked</label>
+            <select class="form-input light" id="eHallmark">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label dark">BIS Hallmark Number (HUID)</label>
+            <input class="form-input light" id="eHallmarkNumber" type="text" />
+          </div>
+        </div>
+        <div class="form-group" style="display:flex;gap:24px;align-items:center;margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+            <input type="checkbox" id="eFeatured" style="accent-color:var(--gold);width:16px;height:16px" /> Featured
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)">
+            <input type="checkbox" id="eInStock" style="accent-color:var(--gold);width:16px;height:16px" /> In Stock
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label dark">Product Images * <span class="img-count" id="editImgCount">0 / 4</span></label>
+          <div class="img-manager-grid" id="editImgGrid"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input class="form-input light" id="editImgUrl" type="url" placeholder="Paste an image link (https://...)" style="flex:1;min-width:200px" />
+            <button type="button" class="btn btn-sm btn-outline" id="editImgUrlBtn">Add link</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0">
+              <i class="fas fa-upload"></i> Upload
+              <input type="file" id="editImgFile" accept="image/*" multiple hidden />
+            </label>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:18px">
+          <label class="form-label dark">Description</label>
+          <textarea class="form-input light" id="eDesc" rows="3" style="resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button type="submit" class="btn btn-gold" id="editSaveBtn"><i class="fas fa-save"></i><span>Save Changes</span></button>
+          <button type="button" class="btn btn-outline" onclick="closeEditProduct()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 <script src="/js/navbar.js"></script>
 <script src="/js/shared.js"></script>
 <script>
@@ -284,6 +364,7 @@ async function loadProducts() {
     if (!d.success) throw new Error(d.message || 'Server error');
     
     // Dynamically populate category select options
+    productCache = d.products || [];
     populateCategoryDropdown(d.products);
     
     if (!d.products || !d.products.length) {
@@ -298,7 +379,10 @@ async function loadProducts() {
       
       return `
         <tr>
-          <td><img src="${p.image}" alt="${p.name}" class="tbl-img" /></td>
+          <td>
+            <img src="${p.image}" alt="${p.name}" class="tbl-img" />
+            ${(p.gallery && p.gallery.length > 1) ? `<span class="img-count">${p.gallery.length} pics</span>` : ''}
+          </td>
           <td><strong>${p.name}</strong></td>
           <td><span class="cat-chip">${p.category}</span></td>
           <td><span style="font-weight:600">${p.jewelryType || 'Gold'}</span></td>
@@ -313,6 +397,7 @@ async function loadProducts() {
           <td><span style="color:${p.inStock ? 'var(--green)' : 'var(--red)'};font-weight:600">${p.inStock ? '✓ In Stock' : '✗ Out'}</span></td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             <a href="/product?id=${p._id}" class="btn btn-sm btn-outline" target="_blank">View</a>
+            <button onclick="openEditProduct('${p._id}')" class="btn btn-sm btn-outline"><i class="fas fa-pen"></i></button>
             <button onclick="deleteProduct('${p._id}', this)" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
           </td>
         </tr>`;
@@ -391,58 +476,120 @@ document.getElementById('pHallmark').addEventListener('change', e => {
   }
 });
 
-// ── Add Product Image Handlers ──
-let uploadedImgBase64 = '';
+// ── Product Image Manager (shared by the add form and the edit modal) ──
+const MAX_IMAGES = 4;
 
-document.querySelectorAll('input[name="pImgSource"]').forEach(radio => {
-  radio.addEventListener('change', e => {
-    const isUrl = e.target.value === 'url';
-    document.getElementById('imgUrlGroup').style.display = isUrl ? 'block' : 'none';
-    document.getElementById('imgUploadGroup').style.display = isUrl ? 'none' : 'block';
-    
-    // Clear inputs and reset preview
-    document.getElementById('pImage').value = '';
-    document.getElementById('pImageFile').value = '';
-    uploadedImgBase64 = '';
-    document.getElementById('imgPreviewWrap').style.display = 'none';
-    document.getElementById('imgPreview').src = '';
-  });
-});
-
-document.getElementById('pImageFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  const wrap = document.getElementById('imgPreviewWrap');
-  const img  = document.getElementById('imgPreview');
-  
-  if (file) {
+// Uploads are downscaled before they become data URLs. Four full-size photos
+// as base64 would otherwise overshoot the server's 10mb JSON body limit.
+function fileToDataUrl(file, maxDim = 1200, quality = 0.85) {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = function(evt) {
-      uploadedImgBase64 = evt.target.result;
-      img.src = uploadedImgBase64;
-      wrap.style.display = 'block';
-    };
-    reader.onerror = function() {
-      showToast('Failed to read file.', 'error');
-      uploadedImgBase64 = '';
-      wrap.style.display = 'none';
-      img.src = '';
+    reader.onerror = () => reject(new Error('Could not read ' + file.name));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error(file.name + ' is not a readable image'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const scale = maxDim / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch {
+          resolve(reader.result); // canvas unavailable — fall back to the original
+        }
+      };
+      img.src = reader.result;
     };
     reader.readAsDataURL(file);
-  } else {
-    uploadedImgBase64 = '';
-    wrap.style.display = 'none';
-    img.src = '';
+  });
+}
+
+function createImageManager({ gridId, urlInputId, urlBtnId, fileInputId, countId }) {
+  let images = [];
+  const grid = document.getElementById(gridId);
+  const urlInput = document.getElementById(urlInputId);
+  const urlBtn = document.getElementById(urlBtnId);
+  const fileInput = document.getElementById(fileInputId);
+  const count = document.getElementById(countId);
+
+  function render() {
+    grid.innerHTML = images.map((src, i) =>
+      '<div class="img-slot">' +
+        '<img src="' + src + '" alt="Image ' + (i + 1) + '" ' +
+          'onerror="this.onerror=null;this.src=\'/images/category-fallback.jpg\'" />' +
+        (i === 0 ? '<span class="img-slot-primary">Main</span>' : '') +
+        '<button type="button" class="img-slot-remove" data-i="' + i + '" aria-label="Remove image ' + (i + 1) + '">&times;</button>' +
+      '</div>'
+    ).join('');
+    count.textContent = images.length + ' / ' + MAX_IMAGES;
+    const full = images.length >= MAX_IMAGES;
+    urlBtn.disabled = full;
+    urlInput.disabled = full;
+    fileInput.disabled = full;
+    urlInput.placeholder = full ? 'Maximum of 4 images reached' : 'Paste an image link (https://...)';
   }
+
+  function add(src) {
+    if (!src) return false;
+    if (images.length >= MAX_IMAGES) { showToast('Maximum of ' + MAX_IMAGES + ' images.', 'error'); return false; }
+    if (images.includes(src)) { showToast('That image has already been added.', 'info'); return false; }
+    images.push(src);
+    render();
+    return true;
+  }
+
+  grid.addEventListener('click', e => {
+    const btn = e.target.closest('.img-slot-remove');
+    if (!btn) return;
+    images.splice(Number(btn.dataset.i), 1);
+    render();
+  });
+
+  urlBtn.addEventListener('click', () => {
+    const val = urlInput.value.trim();
+    if (!val) return;
+    if (!/^https?:\/\//i.test(val)) { showToast('Enter a link starting with http:// or https://', 'error'); return; }
+    if (add(val)) urlInput.value = '';
+  });
+
+  urlInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); urlBtn.click(); }
+  });
+
+  fileInput.addEventListener('change', async e => {
+    const files = Array.from(e.target.files || []);
+    const room = MAX_IMAGES - images.length;
+    if (files.length > room) showToast('Only ' + room + ' more image(s) can be added.', 'info');
+    for (const file of files.slice(0, Math.max(room, 0))) {
+      try { add(await fileToDataUrl(file)); }
+      catch (err) { showToast(err.message || 'Could not read that file.', 'error'); }
+    }
+    e.target.value = '';
+  });
+
+  render();
+
+  return {
+    get: () => images.slice(),
+    set: list => { images = (Array.isArray(list) ? list : []).filter(Boolean).slice(0, MAX_IMAGES); render(); },
+    clear: () => { images = []; render(); }
+  };
+}
+
+const addImages = createImageManager({
+  gridId: 'addImgGrid', urlInputId: 'addImgUrl', urlBtnId: 'addImgUrlBtn',
+  fileInputId: 'addImgFile', countId: 'addImgCount'
 });
 
-document.getElementById('pImage').addEventListener('input', e => {
-  const wrap = document.getElementById('imgPreviewWrap');
-  const img  = document.getElementById('imgPreview');
-  const val  = e.target.value.trim();
-  if (val.startsWith('http')) {
-    img.src = val; wrap.style.display = 'block';
-    img.onerror = () => { wrap.style.display = 'none'; };
-  } else { wrap.style.display = 'none'; }
+const editImages = createImageManager({
+  gridId: 'editImgGrid', urlInputId: 'editImgUrl', urlBtnId: 'editImgUrlBtn',
+  fileInputId: 'editImgFile', countId: 'editImgCount'
 });
 
 document.getElementById('addProductForm').addEventListener('submit', async e => {
@@ -462,13 +609,8 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
   const bisHallmark = isGoldOrSilver && document.getElementById('pHallmark').value === 'true';
   const bisNumber = bisHallmark ? document.getElementById('pHallmarkNumber').value.trim() : '';
 
-  const imgSource = document.querySelector('input[name="pImgSource"]:checked').value;
-  let image = '';
-  if (imgSource === 'url') {
-    image = document.getElementById('pImage').value.trim();
-  } else {
-    image = uploadedImgBase64;
-  }
+  const images = addImages.get();
+
 
   const body = {
     name:        document.getElementById('pName').value.trim(),
@@ -477,7 +619,7 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
     jewelryType: jewelryType,
     bisHallmark: bisHallmark,
     bisNumber:   bisNumber,
-    image:       image,
+    images:      images,
     description: document.getElementById('pDesc').value.trim(),
     material:    document.getElementById('pMaterial').value.trim(),
     weight:      document.getElementById('pWeight').value.trim(),
@@ -485,8 +627,14 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
     inStock:     document.getElementById('pInStock').checked,
   };
 
-  if (!body.name || !body.price || !body.category || !body.image) {
-    showA(err, 'Name, price, category and image are required.'); return;
+  if (!body.name || !body.price || !body.category) {
+    showA(err, 'Name, price and category are required.'); return;
+  }
+  if (!images.length) {
+    showA(err, 'Add at least 1 product image.'); return;
+  }
+  if (images.length > MAX_IMAGES) {
+    showA(err, 'A product can have at most ' + MAX_IMAGES + ' images.'); return;
   }
 
   btn.disabled = true;
@@ -502,17 +650,120 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
       document.getElementById('customCategoryGroup').style.display = 'none';
       document.getElementById('hallmarkRow').style.display = 'flex';
       document.getElementById('hallmarkNumberGroup').style.display = 'block';
-      document.getElementById('imgUrlGroup').style.display = 'block';
-      document.getElementById('imgUploadGroup').style.display = 'none';
-      document.getElementById('imgPreviewWrap').style.display = 'none';
-      document.getElementById('imgPreview').src = '';
-      uploadedImgBase64 = '';
+      addImages.clear();
       loadProducts(); loadStats();
       showToast('Product added!', 'success');
     } else { showA(err, d.message); }
   } catch { showA(err, 'Server error.'); }
   btn.disabled = false;
   btn.querySelector('span').textContent = 'Add Product';
+});
+
+// ── Edit Product ──
+// Products are already in memory from the last loadProducts() call, so the
+// modal opens without another round trip.
+let productCache = [];
+
+function openEditProduct(id) {
+  const p = productCache.find(x => x._id === id);
+  if (!p) { showToast('Could not find that product. Refresh and try again.', 'error'); return; }
+
+  document.getElementById('editError').classList.remove('show');
+  document.getElementById('eId').value = p._id;
+  document.getElementById('eName').value = p.name || '';
+  document.getElementById('ePrice').value = p.price || '';
+  document.getElementById('eCategory').value = p.category || '';
+  document.getElementById('eJewelryType').value = p.jewelryType || 'Gold';
+  document.getElementById('eMaterial').value = p.material || '';
+  document.getElementById('eWeight').value = p.weight || '';
+  document.getElementById('eHallmark').value = p.bisHallmark ? 'true' : 'false';
+  document.getElementById('eHallmarkNumber').value = p.bisNumber || '';
+  document.getElementById('eFeatured').checked = !!p.featured;
+  document.getElementById('eInStock').checked = p.inStock !== false;
+  document.getElementById('eDesc').value = p.description || '';
+
+  // Works for both new gallery products and legacy single-image ones.
+  const gallery = (Array.isArray(p.gallery) && p.gallery.length) ? p.gallery
+    : (Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []));
+  editImages.set(gallery);
+
+  // Offer the categories that already exist, while still allowing a new one.
+  const cats = [...new Set(productCache.map(x => x.category).filter(Boolean))].sort();
+  document.getElementById('eCategoryList').innerHTML = cats.map(c => '<option value="' + c + '"></option>').join('');
+
+  toggleEditHallmark();
+  document.getElementById('editModal').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditProduct() {
+  document.getElementById('editModal').hidden = true;
+  document.body.style.overflow = '';
+}
+
+function toggleEditHallmark() {
+  const type = document.getElementById('eJewelryType').value;
+  const isGoldOrSilver = type === 'Gold' || type === 'Silver';
+  document.getElementById('eHallmarkRow').style.display = isGoldOrSilver ? 'flex' : 'none';
+}
+
+document.getElementById('eJewelryType').addEventListener('change', toggleEditHallmark);
+
+// Close on backdrop click or Escape.
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target.id === 'editModal') closeEditProduct();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('editModal').hidden) closeEditProduct();
+});
+
+document.getElementById('editProductForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const err = document.getElementById('editError');
+  const btn = document.getElementById('editSaveBtn');
+  err.classList.remove('show');
+
+  const images = editImages.get();
+  const type = document.getElementById('eJewelryType').value;
+  const isGoldOrSilver = type === 'Gold' || type === 'Silver';
+  const bisHallmark = isGoldOrSilver && document.getElementById('eHallmark').value === 'true';
+
+  const body = {
+    name:        document.getElementById('eName').value.trim(),
+    price:       document.getElementById('ePrice').value,
+    category:    document.getElementById('eCategory').value.trim(),
+    jewelryType: type,
+    bisHallmark: bisHallmark,
+    bisNumber:   bisHallmark ? document.getElementById('eHallmarkNumber').value.trim() : '',
+    images:      images,
+    description: document.getElementById('eDesc').value.trim(),
+    material:    document.getElementById('eMaterial').value.trim(),
+    weight:      document.getElementById('eWeight').value.trim(),
+    featured:    document.getElementById('eFeatured').checked,
+    inStock:     document.getElementById('eInStock').checked
+  };
+
+  if (!body.name || !body.price || !body.category) {
+    showA(err, 'Name, price and category are required.'); return;
+  }
+  if (!images.length) { showA(err, 'Add at least 1 product image.'); return; }
+  if (images.length > MAX_IMAGES) { showA(err, 'A product can have at most ' + MAX_IMAGES + ' images.'); return; }
+
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Saving...';
+  try {
+    const r = await fetch('/api/admin/products/' + document.getElementById('eId').value, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.success) {
+      closeEditProduct();
+      showToast('Product updated.', 'success');
+      loadProducts(); loadStats();
+    } else { showA(err, d.message || 'Update failed.'); }
+  } catch { showA(err, 'Server error.'); }
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Save Changes';
 });
 
 // ── Messages ──

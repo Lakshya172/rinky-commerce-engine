@@ -20,6 +20,55 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/products/categories
+// Declared before '/:id' so the literal path is not captured as an id.
+// Returns every category that currently exists in the catalogue, together with
+// the images belonging to that category, so the home page can show a picture
+// that genuinely comes from the category it labels.
+router.get('/categories', async (req, res) => {
+  try {
+    const grouped = await Product.aggregate([
+      { $match: { category: { $nin: [null, ''] } } },
+      {
+        $project: {
+          category: 1,
+          inStock: 1,
+          // Old products only have `image`; newer ones have a gallery.
+          pics: {
+            $cond: [
+              { $gt: [{ $size: { $ifNull: ['$images', []] } }, 0] },
+              '$images',
+              { $cond: [{ $ifNull: ['$image', false] }, ['$image'], []] }
+            ]
+          }
+        }
+      },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          inStockCount: { $sum: { $cond: ['$inStock', 1, 0] } },
+          images: { $push: '$pics' }
+        }
+      },
+      { $sort: { count: -1, _id: 1 } }
+    ]);
+
+    const categories = grouped.map(g => ({
+      name: g._id,
+      count: g.count,
+      inStockCount: g.inStockCount,
+      // Flatten, drop blanks, de-duplicate. May legitimately be empty, in
+      // which case the client falls back to a bundled image.
+      images: [...new Set([].concat(...g.images).filter(src => typeof src === 'string' && src.trim()))]
+    }));
+
+    res.json({ success: true, categories });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch categories.' });
+  }
+});
+
 // GET /api/products/:id
 router.get('/:id', async (req, res) => {
   try {

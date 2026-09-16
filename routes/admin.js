@@ -5,6 +5,28 @@ const Contact = require('../models/Contact');
 const User    = require('../models/User');
 const { requireAdmin } = require('../middleware/auth');
 
+const MAX_PRODUCT_IMAGES = 4;
+
+// Accepts either the new `images` array or the legacy single `image` field and
+// returns a cleaned gallery, or an error string when the 1-4 rule is broken.
+function normaliseGallery(body) {
+  let list;
+  if (Array.isArray(body.images)) list = body.images;
+  else if (typeof body.images === 'string' && body.images.trim()) list = [body.images];
+  else if (body.image) list = [body.image];
+  else list = [];
+
+  const cleaned = list
+    .filter(src => typeof src === 'string' && src.trim())
+    .map(src => src.trim());
+
+  if (!cleaned.length) return { error: 'At least one product image is required.' };
+  if (cleaned.length > MAX_PRODUCT_IMAGES) {
+    return { error: `A product can have at most ${MAX_PRODUCT_IMAGES} images.` };
+  }
+  return { images: cleaned };
+}
+
 // All admin routes require admin role
 router.use(requireAdmin);
 
@@ -36,11 +58,17 @@ router.get('/products', async (req, res) => {
 // POST add product
 router.post('/products', async (req, res) => {
   try {
-    const { name, price, category, image, description, material, weight, featured, inStock, jewelryType, bisHallmark, bisNumber } = req.body;
-    if (!name || !price || !category || !image)
-      return res.status(400).json({ success: false, message: 'Name, price, category and image are required.' });
+    const { name, price, category, description, material, weight, featured, inStock, jewelryType, bisHallmark, bisNumber } = req.body;
+    if (!name || !price || !category)
+      return res.status(400).json({ success: false, message: 'Name, price and category are required.' });
+
+    const gallery = normaliseGallery(req.body);
+    if (gallery.error) return res.status(400).json({ success: false, message: gallery.error });
+
     const product = await Product.create({
-      name, price: Number(price), category, image, description, material, weight,
+      name, price: Number(price), category, description, material, weight,
+      image: gallery.images[0],
+      images: gallery.images,
       featured: featured === true || featured === 'true',
       inStock:  inStock  !== false && inStock  !== 'false',
       jewelryType: jewelryType || 'Gold',
@@ -49,7 +77,49 @@ router.post('/products', async (req, res) => {
     });
     res.json({ success: true, product });
   } catch (err) {
+    if (err.name === 'ValidationError') {
+      const first = Object.values(err.errors)[0];
+      return res.status(400).json({ success: false, message: first ? first.message : 'Invalid product data.' });
+    }
     res.status(500).json({ success: false, message: 'Failed to add product.' });
+  }
+});
+
+// PUT update product
+router.put('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
+
+    const { name, price, category, description, material, weight, featured, inStock, jewelryType, bisHallmark, bisNumber } = req.body;
+    if (!name || !price || !category)
+      return res.status(400).json({ success: false, message: 'Name, price and category are required.' });
+
+    const gallery = normaliseGallery(req.body);
+    if (gallery.error) return res.status(400).json({ success: false, message: gallery.error });
+
+    product.name        = name;
+    product.price       = Number(price);
+    product.category    = category;
+    product.description = description || '';
+    product.material    = material || '22K Gold';
+    product.weight      = weight || '';
+    product.images      = gallery.images;
+    product.image       = gallery.images[0];
+    product.featured    = featured === true || featured === 'true';
+    product.inStock     = inStock !== false && inStock !== 'false';
+    product.jewelryType = jewelryType || 'Gold';
+    product.bisHallmark = bisHallmark === true || bisHallmark === 'true';
+    product.bisNumber   = product.bisHallmark ? (bisNumber || '') : '';
+
+    await product.save();
+    res.json({ success: true, product });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const first = Object.values(err.errors)[0];
+      return res.status(400).json({ success: false, message: first ? first.message : 'Invalid product data.' });
+    }
+    res.status(500).json({ success: false, message: 'Failed to update product.' });
   }
 });
 

@@ -166,43 +166,9 @@
         <h2 class="section-title">Our Collections</h2>
         <span class="ornament">✦ ✦ ✦</span>
       </div>
-      <div class="cat-grid">
-        <a href="/products?category=Necklaces" class="cat-card">
-          <div class="cat-card-img"><img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500"
-              alt="Necklaces" loading="lazy" /></div>
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-label">
-            <span class="cat-card-icon">📿</span>
-            <span class="cat-card-name">Necklaces</span>
-          </div>
-        </a>
-        <a href="/products?category=Rings" class="cat-card">
-          <div class="cat-card-img"><img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500"
-              alt="Rings" loading="lazy" /></div>
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-label">
-            <span class="cat-card-icon">💍</span>
-            <span class="cat-card-name">Rings</span>
-          </div>
-        </a>
-        <a href="/products?category=Earrings" class="cat-card">
-          <div class="cat-card-img"><img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500"
-              alt="Earrings" loading="lazy" /></div>
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-label">
-            <span class="cat-card-icon">✨</span>
-            <span class="cat-card-name">Earrings</span>
-          </div>
-        </a>
-        <a href="/products?category=Bangles" class="cat-card">
-          <div class="cat-card-img"><img src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500"
-              alt="Bangles" loading="lazy" /></div>
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-label">
-            <span class="cat-card-icon">🌟</span>
-            <span class="cat-card-name">Bangles</span>
-          </div>
-        </a>
+      <div class="cat-grid" id="catGrid">
+        <!-- Populated from /api/products/categories so a category added in the
+             admin portal shows up here without a code change. -->
       </div>
     </div>
   </section>
@@ -302,6 +268,72 @@
 
   <script src="/js/navbar.js"></script>
   <script src="/js/shared.js"></script>
+  <script>
+    // ── Categories (dynamic) ──────────────────────────────────────────────
+    // Categories come from the catalogue itself, and each card shows a picture
+    // belonging to that same category. A different one is picked on each load,
+    // so the grid stays alive without ever showing an unrelated image.
+    const CATEGORY_FALLBACK_IMG = '/images/category-fallback.jpg';
+
+    const CATEGORY_ICONS = {
+      necklaces: '📿', necklace: '📿',
+      rings: '💍', ring: '💍',
+      earrings: '✨', earring: '✨',
+      bangles: '🌟', bangle: '🌟', kada: '🌟', bracelets: '🌟', bracelet: '🌟',
+      chains: '⛓️', chain: '⛓️',
+      pendants: '🔱', pendant: '🔱',
+      anklets: '👣', anklet: '👣',
+      mangalsutra: '🖤', nosepin: '💠', sets: '👑', set: '👑'
+    };
+
+    const iconFor = name => CATEGORY_ICONS[String(name).trim().toLowerCase()] || '✦';
+
+    const escapeHtml = str => String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+    const pickImage = images => {
+      if (!Array.isArray(images) || !images.length) return CATEGORY_FALLBACK_IMG;
+      return images[Math.floor(Math.random() * images.length)] || CATEGORY_FALLBACK_IMG;
+    };
+
+    (async () => {
+      const grid = document.getElementById('catGrid');
+      if (!grid) return;
+      try {
+        const res = await fetch('/api/products/categories');
+        const data = await res.json();
+        const categories = (data && data.success && Array.isArray(data.categories)) ? data.categories : [];
+
+        if (!categories.length) {
+          grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px 0">' +
+            'Collections are on their way. <a href="/products" style="color:var(--gold)">Browse everything →</a></p>';
+          return;
+        }
+
+        grid.innerHTML = categories.map(cat => {
+          const name = escapeHtml(cat.name);
+          const href = '/products?category=' + encodeURIComponent(cat.name);
+          const img  = escapeHtml(pickImage(cat.images));
+          return '<a href="' + href + '" class="cat-card">' +
+            '<div class="cat-card-img"><img src="' + img + '" alt="' + name + '" loading="lazy" ' +
+              'onerror="this.onerror=null;this.src=\'' + CATEGORY_FALLBACK_IMG + '\'" /></div>' +
+            '<div class="cat-card-overlay"></div>' +
+            '<div class="cat-card-label">' +
+              '<span class="cat-card-icon">' + iconFor(cat.name) + '</span>' +
+              '<span class="cat-card-name">' + name + '</span>' +
+            '</div>' +
+          '</a>';
+        }).join('');
+
+        if (typeof initScrollReveal === 'function') initScrollReveal();
+      } catch {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px 0">' +
+          'Could not load collections. <a href="/products" style="color:var(--gold)">Browse everything →</a></p>';
+      }
+    })();
+  </script>
+
   <script>
     // Load featured products
     (async () => {
