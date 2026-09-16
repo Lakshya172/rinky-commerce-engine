@@ -2637,6 +2637,14 @@ html.lenis, html.lenis body {
   overflow-y: auto
 }
 
+/* The rule above sets display:flex, which outranks the browser default of
+   [hidden] { display: none } because author styles beat the user-agent
+   sheet. Without this the modal renders on page load even though the
+   markup carries the hidden attribute. */
+.admin-modal[hidden] {
+  display: none
+}
+
 .admin-modal-box {
   background: var(--ivory);
   border-radius: var(--r);
