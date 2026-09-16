@@ -1640,9 +1640,14 @@ em {
 }
 
 .about-img img {
+  display: block;
   width: 100%;
+  /* Without this, the img height attribute becomes a fixed CSS height that
+     overrides aspect-ratio and crops the photo into a tall sliver. */
+  height: auto;
   aspect-ratio: 4/5;
   object-fit: cover;
+  object-position: center;
   border-radius: var(--r)
 }
 
