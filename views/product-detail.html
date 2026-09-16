@@ -118,11 +118,29 @@
         </div>`;
     }
 
+    // Older products only ever stored a single `image`; the API exposes a
+    // `gallery` virtual so both shapes render the same way here.
+    const gallery = (Array.isArray(p.gallery) && p.gallery.length)
+      ? p.gallery
+      : (Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []));
+    const mainImg = gallery[0] || '/images/category-fallback.jpg';
+
+    const thumbsHTML = gallery.length > 1
+      ? `<div class="detail-thumbs" id="pdThumbs">` + gallery.map((src, i) =>
+          `<button type="button" class="detail-thumb${i === 0 ? ' active' : ''}" data-src="${src}" aria-label="View image ${i + 1}">` +
+          `<img src="${src}" alt="${p.name} – image ${i + 1}" loading="lazy" ` +
+          `onerror="this.onerror=null;this.src='/images/category-fallback.jpg'" /></button>`
+        ).join('') + `</div>`
+      : '';
+
     document.getElementById('detailContainer').innerHTML = `
       <div class="detail-grid">
-        <div class="detail-img">
-          <img src="${p.image}" alt="${p.name}" />
-          ${p.featured ? '<span class="detail-badge">✦ Featured Piece</span>' : ''}
+        <div class="detail-gallery">
+          <div class="detail-img">
+            <img id="pdMainImg" src="${mainImg}" alt="${p.name}" onerror="this.onerror=null;this.src='/images/category-fallback.jpg'" />
+            ${p.featured ? '<span class="detail-badge">✦ Featured Piece</span>' : ''}
+          </div>
+          ${thumbsHTML}
         </div>
         <div class="detail-info">
           <span class="detail-cat">${p.category}</span>
@@ -166,6 +184,20 @@
           </p>
         </div>
       </div>`;
+
+    // Thumbnail switching
+    const thumbWrap = document.getElementById('pdThumbs');
+    if (thumbWrap) {
+      thumbWrap.addEventListener('click', e => {
+        const btn = e.target.closest('.detail-thumb');
+        if (!btn) return;
+        const main = document.getElementById('pdMainImg');
+        if (!main) return;
+        main.src = btn.dataset.src;
+        thumbWrap.querySelectorAll('.detail-thumb').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    }
 
     // Related
     if (data.related && data.related.length > 0) {
