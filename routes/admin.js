@@ -4,6 +4,7 @@ const Product = require('../models/Product');
 const Contact = require('../models/Contact');
 const User    = require('../models/User');
 const { requireAdmin } = require('../middleware/auth');
+const { validateRates, setCurrentRates } = require('../utils/rates');
 
 const MAX_PRODUCT_IMAGES = 4;
 
@@ -143,6 +144,21 @@ router.patch('/products/:id/featured', async (req, res) => {
     res.json({ success: true, featured: p.featured });
   } catch {
     res.status(500).json({ success: false });
+  }
+});
+
+// PUT update the current Gold & Silver rates
+// Protected by router.use(requireAdmin) above. Only the four rate fields are
+// read from the body; the timestamp is always generated on the server.
+router.put('/rates', async (req, res) => {
+  try {
+    const { values, errors, message } = validateRates(req.body);
+    if (errors) return res.status(400).json({ success: false, message, errors });
+
+    const rates = await setCurrentRates(values, { source: 'manual' });
+    res.json({ success: true, rates });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to update rates.' });
   }
 });
 

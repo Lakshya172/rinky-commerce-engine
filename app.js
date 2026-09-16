@@ -10,6 +10,7 @@ const methodOverride = require('method-override');
 const path         = require('path');
 const User         = require('./models/User');
 const Product      = require('./models/Product');
+const { initRates } = require('./utils/rates');
 
 const app = express();
 
@@ -24,6 +25,15 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/rinky_jewe
 mongoose.connect(MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB connected');
+
+    // Gold & Silver rates: collapse any duplicate documents left over from
+    // development, then enforce the unique index so only one can exist.
+    try {
+      const { removed } = await initRates();
+      if (removed) console.log(`🧹 Removed ${removed} duplicate rates document(s).`);
+    } catch (e) {
+      console.error('Failed to initialise rates collection:', e.message);
+    }
     try {
       // Bootstrap admin accounts from numbered env slots: ADMIN_*, ADMIN2_*,
       // ADMIN3_* and so on. A slot is used only when both its email and its
@@ -258,6 +268,7 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/contact',  require('./routes/contact'));
 app.use('/api/admin',    require('./routes/admin'));
 app.use('/api/wishlist', require('./routes/wishlist'));
+app.use('/api/rates',    require('./routes/rates'));
 
 // ── SEO: sitemap ──────────────────────────────────────────────────────────────
 const SITE_URL = (process.env.BASE_URL || 'https://www.rinkyjewellers.in').replace(/\/+$/, '');
