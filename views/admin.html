@@ -39,6 +39,7 @@
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="products-tab">📦 Products</button>
       <button class="admin-tab" data-tab="add-tab">➕ Add Product</button>
+      <button class="admin-tab" data-tab="rates-tab">💰 Gold &amp; Silver Rates</button>
       <button class="admin-tab" data-tab="messages-tab">✉️ Messages</button>
       <button class="admin-tab" data-tab="users-tab">👥 Users</button>
     </div>
@@ -169,6 +170,71 @@
       </div>
     </div>
 
+    <!-- ── RATES TAB ── -->
+    <div class="admin-tab-content" id="rates-tab">
+      <div class="admin-card">
+        <h3><i class="fas fa-coins"></i> Gold &amp; Silver Rates</h3>
+        <p class="rates-admin-intro">
+          These rates appear in the bar at the top of the home page. Enter the current rates
+          <strong>without GST</strong> and click <strong>Update Rates</strong>. The update time is
+          recorded automatically when you save, and only the latest rates are kept.
+        </p>
+        <div class="form-alert form-alert-success" id="ratesSuccess"><i class="fas fa-check-circle"></i><span></span></div>
+        <div class="form-alert form-alert-error"   id="ratesError"><i class="fas fa-exclamation-circle"></i><span></span></div>
+
+        <!-- Read-only: set by the server on each successful save -->
+        <div class="rates-admin-status" aria-live="polite">
+          <span class="rates-admin-status-label">Last updated</span>
+          <strong id="ratesLastUpdated">Loading…</strong>
+          <small id="ratesLastUpdatedHint"></small>
+        </div>
+
+        <form id="ratesForm" novalidate autocomplete="off">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark" for="rGold24">24 KT Gold <span style="font-weight:500;text-transform:none;letter-spacing:0">(₹ per 10 g)</span> *</label>
+              <div class="rate-input-wrap">
+                <span class="rate-currency" aria-hidden="true">₹</span>
+                <input class="form-input light" id="rGold24" name="gold24" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter rate per 10 g" aria-describedby="rGold24Preview rGold24Err" />
+              </div>
+              <small class="rate-preview" id="rGold24Preview" data-unit="10g" aria-live="polite"></small>
+              <small class="rate-field-error" id="rGold24Err"></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label dark" for="rGold22">22 KT Gold <span style="font-weight:500;text-transform:none;letter-spacing:0">(₹ per 10 g)</span> *</label>
+              <div class="rate-input-wrap">
+                <span class="rate-currency" aria-hidden="true">₹</span>
+                <input class="form-input light" id="rGold22" name="gold22" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter rate per 10 g" aria-describedby="rGold22Preview rGold22Err" />
+              </div>
+              <small class="rate-preview" id="rGold22Preview" data-unit="10g" aria-live="polite"></small>
+              <small class="rate-field-error" id="rGold22Err"></small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label dark" for="rGold20">20 KT Gold <span style="font-weight:500;text-transform:none;letter-spacing:0">(₹ per 10 g)</span> *</label>
+              <div class="rate-input-wrap">
+                <span class="rate-currency" aria-hidden="true">₹</span>
+                <input class="form-input light" id="rGold20" name="gold20" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter rate per 10 g" aria-describedby="rGold20Preview rGold20Err" />
+              </div>
+              <small class="rate-preview" id="rGold20Preview" data-unit="10g" aria-live="polite"></small>
+              <small class="rate-field-error" id="rGold20Err"></small>
+            </div>
+            <div class="form-group">
+              <label class="form-label dark" for="rSilver">Silver <span style="font-weight:500;text-transform:none;letter-spacing:0">(₹ per kg)</span> *</label>
+              <div class="rate-input-wrap">
+                <span class="rate-currency" aria-hidden="true">₹</span>
+                <input class="form-input light" id="rSilver" name="silver" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter rate per kg" aria-describedby="rSilverPreview rSilverErr" />
+              </div>
+              <small class="rate-preview" id="rSilverPreview" data-unit="kg" aria-live="polite"></small>
+              <small class="rate-field-error" id="rSilverErr"></small>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-gold" id="ratesSaveBtn"><i class="fas fa-save"></i><span>Update Rates</span></button>
+        </form>
+      </div>
+    </div>
+
     <!-- ── MESSAGES TAB ── -->
     <div class="admin-tab-content" id="messages-tab">
       <div class="admin-card">
@@ -291,6 +357,7 @@
 
 <script src="/js/navbar.js"></script>
 <script src="/js/shared.js"></script>
+<script src="/js/rates.js"></script>
 <script>
 (async () => {
   // Auth guard
@@ -310,6 +377,7 @@
   loadProducts();
   loadMessages();
   loadUsers();
+  loadRates();
 })();
 
 // ── Tab switching ──
@@ -764,6 +832,149 @@ document.getElementById('editProductForm').addEventListener('submit', async e =>
   } catch { showA(err, 'Server error.'); }
   btn.disabled = false;
   btn.querySelector('span').textContent = 'Save Changes';
+});
+
+// ── Gold & Silver Rates ──
+// Only the four rate values are ever sent. The timestamp is never sent and
+// never editable: the server generates it on each successful save, and it is
+// not touched by opening this tab, editing fields or refreshing the page.
+const RATE_INPUTS = [
+  { key: 'gold24', id: 'rGold24', label: '24 KT gold rate' },
+  { key: 'gold22', id: 'rGold22', label: '22 KT gold rate' },
+  { key: 'gold20', id: 'rGold20', label: '20 KT gold rate' },
+  { key: 'silver', id: 'rSilver', label: 'Silver rate' }
+];
+const RATE_MAX = 10000000;
+const RATE_PATTERN = /^\d+(\.\d{1,2})?$/;
+let ratesSaving = false;
+
+// Mirrors the server rules so mistakes are caught before a round trip. The
+// server still validates independently and is the final authority.
+function checkRateValue(raw, label) {
+  if (!raw) return label + ' is required.';
+  if (!RATE_PATTERN.test(raw)) return label + ' must be a positive number (digits only, up to 2 decimals).';
+  const n = Number(raw);
+  if (!(n > 0)) return label + ' must be greater than zero.';
+  if (n > RATE_MAX) return label + ' looks too large. Please check the value.';
+  return '';
+}
+
+function setRateFieldError(input, message) {
+  input.classList.toggle('is-invalid', !!message);
+  input.setAttribute('aria-invalid', message ? 'true' : 'false');
+  document.getElementById(input.id + 'Err').textContent = message || '';
+}
+
+// Shows the value exactly as customers will see it, which makes a slipped
+// digit (16000 instead of 160000) obvious before saving.
+function updateRatePreview(input) {
+  const preview = document.getElementById(input.id + 'Preview');
+  const raw = input.value.trim();
+  preview.textContent = RATE_PATTERN.test(raw) && Number(raw) > 0
+    ? 'Shows as ' + RinkyRates.formatRate(Number(raw), preview.dataset.unit)
+    : '';
+}
+
+function renderRatesStatus(rates) {
+  const main = document.getElementById('ratesLastUpdated');
+  const hint = document.getElementById('ratesLastUpdatedHint');
+  if (!rates || !rates.lastUpdated) {
+    main.textContent = 'Not published yet';
+    hint.textContent = 'Save rates to show them on the home page.';
+    return;
+  }
+  main.textContent = RinkyRates.formatUpdatedFull(rates.lastUpdated);
+  hint.textContent = 'Home page shows: \u201C' + RinkyRates.formatUpdated(rates.lastUpdated) + '\u201D';
+}
+
+function fillRateInputs(rates) {
+  RATE_INPUTS.forEach(f => {
+    const input = document.getElementById(f.id);
+    input.value = rates && rates[f.key] != null ? String(rates[f.key]) : '';
+    setRateFieldError(input, '');
+    updateRatePreview(input);
+  });
+}
+
+async function loadRates() {
+  try {
+    const r = await fetch('/api/rates', { cache: 'no-store' });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'Failed');
+    fillRateInputs(d.rates);
+    renderRatesStatus(d.rates);
+  } catch {
+    document.getElementById('ratesLastUpdated').textContent = 'Could not load current rates';
+    document.getElementById('ratesLastUpdatedHint').textContent = 'Refresh the page to try again.';
+  }
+}
+
+RATE_INPUTS.forEach(f => {
+  const input = document.getElementById(f.id);
+  input.addEventListener('input', () => {
+    updateRatePreview(input);
+    if (input.classList.contains('is-invalid')) setRateFieldError(input, '');
+  });
+});
+
+document.getElementById('ratesForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (ratesSaving) return; // ignore double clicks while a save is in flight
+
+  const succ = document.getElementById('ratesSuccess');
+  const err  = document.getElementById('ratesError');
+  const btn  = document.getElementById('ratesSaveBtn');
+  succ.classList.remove('show'); err.classList.remove('show');
+
+  const payload = {};
+  let firstInvalid = null;
+  RATE_INPUTS.forEach(f => {
+    const input = document.getElementById(f.id);
+    const raw = input.value.trim();
+    const problem = checkRateValue(raw, f.label);
+    setRateFieldError(input, problem);
+    if (problem && !firstInvalid) firstInvalid = { input, problem };
+    payload[f.key] = raw;
+  });
+
+  if (firstInvalid) {
+    showA(err, firstInvalid.problem);
+    firstInvalid.input.focus();
+    return;
+  }
+
+  ratesSaving = true;
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Updating...';
+  try {
+    const r = await fetch('/api/admin/rates', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.success) {
+      fillRateInputs(d.rates);
+      renderRatesStatus(d.rates);
+      showA(succ, 'Rates updated. The home page now shows the new rates.');
+      showToast('Gold & silver rates updated.', 'success');
+    } else {
+      if (d.errors) {
+        RATE_INPUTS.forEach(f => {
+          if (d.errors[f.key]) setRateFieldError(document.getElementById(f.id), d.errors[f.key]);
+        });
+      }
+      showA(err, d.message || (r.status === 403
+        ? 'Your admin session has expired. Please log in again.'
+        : 'Could not update rates. Nothing was changed.'));
+    }
+  } catch {
+    showA(err, 'Server error. Rates were not updated.');
+  } finally {
+    ratesSaving = false;
+    btn.disabled = false;
+    btn.querySelector('span').textContent = 'Update Rates';
+  }
 });
 
 // ── Messages ──

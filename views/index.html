@@ -129,7 +129,25 @@
   </script>
 </head>
 
-<body>
+<body class="has-rate-bar">
+
+  <!-- ── Gold & Silver Rates (home page only) ──
+       Values and timestamp are loaded from /api/rates by /js/rates.js;
+       nothing here is a real price. -->
+  <div class="rate-bar" id="rateBar" role="region" aria-label="Today's gold and silver rates" aria-busy="true" data-state="loading">
+    <div class="rate-bar-inner">
+      <div class="rate-bar-head">
+        <p class="rate-bar-title"><span class="rate-bar-gem" aria-hidden="true">◆</span>Gold Rates <span class="rate-bar-note">(Without GST)</span></p>
+        <p class="rate-bar-updated"><i class="far fa-clock" aria-hidden="true"></i><time id="rateBarUpdated">Loading today’s rates…</time></p>
+      </div>
+      <ul class="rate-bar-list">
+        <li class="rate-item"><span class="rate-label">24 KT</span><span class="rate-value is-loading" data-rate="gold24" data-unit="10g"></span></li>
+        <li class="rate-item"><span class="rate-label">22 KT</span><span class="rate-value is-loading" data-rate="gold22" data-unit="10g"></span></li>
+        <li class="rate-item"><span class="rate-label">20 KT</span><span class="rate-value is-loading" data-rate="gold20" data-unit="10g"></span></li>
+        <li class="rate-item rate-item-silver"><span class="rate-label">Silver</span><span class="rate-value is-loading" data-rate="silver" data-unit="kg"></span></li>
+      </ul>
+    </div>
+  </div>
 
   <div id="nav-placeholder"></div>
 
@@ -268,6 +286,7 @@
 
   <script src="/js/navbar.js"></script>
   <script src="/js/shared.js"></script>
+  <script src="/js/rates.js"></script>
   <script>
     // ── Categories (dynamic) ──────────────────────────────────────────────
     // Categories come from the catalogue itself, and each card shows a picture
