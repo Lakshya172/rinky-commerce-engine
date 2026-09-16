@@ -16,6 +16,9 @@
   --dark: #13110D;
   --dark-2: #1E1B16;
   --dark-3: #2A2620;
+  /* Matte behind product photos. Read by the admin upload processor too, so
+     padded uploads and on-screen frames always use the identical colour. */
+  --product-matte: var(--dark);
   --ivory: #FBF8F2;
   --ivory-2: #F2ECE0;
   --ivory-3: #E8E0D0;
@@ -766,13 +769,23 @@ em {
 .prod-img {
   position: relative;
   aspect-ratio: 1;
-  overflow: hidden
+  overflow: hidden;
+  background: var(--product-matte)
+}
+
+.prod-img > a {
+  display: block;
+  width: 100%;
+  height: 100%
 }
 
 .prod-img img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* contain, not cover: the whole piece stays visible whatever its shape */
+  object-fit: contain;
+  object-position: center;
   transition: transform .5s var(--ease)
 }
 
@@ -1371,12 +1384,15 @@ em {
   border-radius: var(--r);
   overflow: hidden;
   box-shadow: var(--shadow);
+  background: var(--product-matte);
 }
 
 .detail-img img {
+  display: block;
   width: 100%;
   aspect-ratio: 1;
-  object-fit: cover
+  object-fit: contain;
+  object-position: center
 }
 
 .detail-badge {
@@ -1956,7 +1972,8 @@ tbody tr:hover td {
 .tbl-img {
   width: 48px;
   height: 48px;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--product-matte);
   border-radius: var(--r)
 }
 
@@ -2538,7 +2555,7 @@ html.lenis, html.lenis body {
   border: 2px solid transparent;
   border-radius: var(--r);
   overflow: hidden;
-  background: none;
+  background: var(--product-matte);
   cursor: pointer;
   line-height: 0;
   transition: border-color var(--t), opacity var(--t);
@@ -2546,9 +2563,10 @@ html.lenis, html.lenis body {
 }
 
 .detail-thumb img {
+  display: block;
   width: 100%;
   aspect-ratio: 1;
-  object-fit: cover
+  object-fit: contain
 }
 
 .detail-thumb:hover { opacity: 1 }
@@ -2572,13 +2590,13 @@ html.lenis, html.lenis body {
   overflow: hidden;
   border: 2px solid var(--gold);
   aspect-ratio: 1;
-  background: var(--ivory-2)
+  background: var(--product-matte)
 }
 
 .img-slot img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block
 }
 
@@ -2616,6 +2634,27 @@ html.lenis, html.lenis body {
 }
 
 .img-slot-remove:hover { background: var(--red) }
+
+/* Replace an image in place, keeping its position (e.g. the main image) */
+.img-slot-replace {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .68);
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center
+}
+
+.img-slot-replace:hover { background: var(--gold); color: var(--black) }
 
 .img-count {
   font-size: 12px;

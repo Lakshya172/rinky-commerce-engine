@@ -547,44 +547,100 @@ document.getElementById('pHallmark').addEventListener('change', e => {
 // ── Product Image Manager (shared by the add form and the edit modal) ──
 const MAX_IMAGES = 4;
 
-// Uploads are downscaled before they become data URLs. Four full-size photos
-// as base64 would otherwise overshoot the server's 10mb JSON body limit.
-function fileToDataUrl(file, maxDim = 1200, quality = 0.85) {
+// ── Upload standard: every uploaded photo becomes a 1:1 square ──
+// The photo is scaled to fit inside the square (never cropped, never
+// stretched) and centred on a solid matte. The matte is the same
+// --product-matte colour the site uses behind product images, so padded
+// uploads and on-screen frames match exactly. Images are never enlarged: a
+// small photo produces a small square. Output is JPEG, capped at 1200x1200 so
+// four photos stay well inside the server's 10mb JSON body limit.
+const PRODUCT_IMAGE_MAX_SIDE = 1200;
+const PRODUCT_IMAGE_QUALITY = 0.88;
+const PRODUCT_MATTE_FALLBACK = '#13110D';
+
+function productMatteColour() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--product-matte').trim();
+  return v || PRODUCT_MATTE_FALLBACK;
+}
+
+// Decodes with EXIF orientation applied, so phone photos are not sideways.
+async function decodeImageFile(file) {
+  if ('createImageBitmap' in window) {
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch { /* fall back below */ }
+  }
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Could not read ' + file.name));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error(file.name + ' is not a readable image'));
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          const scale = maxDim / Math.max(width, height);
-          width = Math.round(width * scale);
-          height = Math.round(height * scale);
-        }
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        } catch {
-          resolve(reader.result); // canvas unavailable — fall back to the original
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(file.name + ' is not a readable image.')); };
+    img.src = url;
   });
+}
+
+// Large reductions in one step alias badly (fine chains and filigree shimmer),
+// so halve repeatedly until within 2x of the target, then do the final draw.
+function stepDown(source, w, h, targetW, targetH) {
+  let current = source, cw = w, ch = h;
+  while (cw / 2 >= targetW && ch / 2 >= targetH) {
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(cw / 2));
+    c.height = Math.max(1, Math.round(ch / 2));
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(current, 0, 0, c.width, c.height);
+    current = c; cw = c.width; ch = c.height;
+  }
+  return current;
+}
+
+async function fileToSquareDataUrl(file) {
+  if (file.type && !file.type.startsWith('image/')) throw new Error(file.name + ' is not an image file.');
+  const source = await decodeImageFile(file);
+  const w = source.naturalWidth || source.width;
+  const h = source.naturalHeight || source.height;
+  if (!w || !h) throw new Error(file.name + ' has no readable dimensions.');
+
+  const side = Math.min(PRODUCT_IMAGE_MAX_SIDE, Math.max(w, h)); // never enlarge
+  const scale = side / Math.max(w, h);                            // <= 1
+  const drawW = Math.max(1, Math.round(w * scale));
+  const drawH = Math.max(1, Math.round(h * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = side;
+  canvas.height = side;
+  const ctx = canvas.getContext('2d');
+  // Solid matte first: also flattens transparent PNGs onto the brand colour
+  // instead of the black JPEG would otherwise give them.
+  ctx.fillStyle = PRODUCT_MATTE_FALLBACK;
+  ctx.fillStyle = productMatteColour();
+  ctx.fillRect(0, 0, side, side);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(stepDown(source, w, h, drawW, drawH),
+    Math.round((side - drawW) / 2), Math.round((side - drawH) / 2), drawW, drawH);
+  if (typeof source.close === 'function') source.close();
+
+  return canvas.toDataURL('image/jpeg', PRODUCT_IMAGE_QUALITY);
 }
 
 function createImageManager({ gridId, urlInputId, urlBtnId, fileInputId, countId }) {
   let images = [];
+  let pending = 0;          // uploads still being standardised
+  let replaceIndex = -1;
   const grid = document.getElementById(gridId);
   const urlInput = document.getElementById(urlInputId);
   const urlBtn = document.getElementById(urlBtnId);
   const fileInput = document.getElementById(fileInputId);
   const count = document.getElementById(countId);
+
+  // One hidden picker per manager for replacing an image in place, so the
+  // main image can be swapped without changing the order.
+  const replaceInput = document.createElement('input');
+  replaceInput.type = 'file';
+  replaceInput.accept = 'image/*';
+  replaceInput.hidden = true;
+  fileInput.insertAdjacentElement('afterend', replaceInput);
 
   function render() {
     grid.innerHTML = images.map((src, i) =>
@@ -592,11 +648,14 @@ function createImageManager({ gridId, urlInputId, urlBtnId, fileInputId, countId
         '<img src="' + src + '" alt="Image ' + (i + 1) + '" ' +
           'onerror="this.onerror=null;this.src=\'/images/category-fallback.jpg\'" />' +
         (i === 0 ? '<span class="img-slot-primary">Main</span>' : '') +
+        '<button type="button" class="img-slot-replace" data-i="' + i + '" aria-label="Replace image ' + (i + 1) + '" title="Replace image"><i class="fas fa-exchange-alt"></i></button>' +
         '<button type="button" class="img-slot-remove" data-i="' + i + '" aria-label="Remove image ' + (i + 1) + '">&times;</button>' +
       '</div>'
     ).join('');
-    count.textContent = images.length + ' / ' + MAX_IMAGES;
-    const full = images.length >= MAX_IMAGES;
+    count.textContent = pending
+      ? 'Processing ' + pending + '…'
+      : images.length + ' / ' + MAX_IMAGES;
+    const full = images.length + pending >= MAX_IMAGES;
     urlBtn.disabled = full;
     urlInput.disabled = full;
     fileInput.disabled = full;
@@ -613,10 +672,39 @@ function createImageManager({ gridId, urlInputId, urlBtnId, fileInputId, countId
   }
 
   grid.addEventListener('click', e => {
-    const btn = e.target.closest('.img-slot-remove');
-    if (!btn) return;
-    images.splice(Number(btn.dataset.i), 1);
-    render();
+    const remove = e.target.closest('.img-slot-remove');
+    if (remove) {
+      images.splice(Number(remove.dataset.i), 1);
+      render();
+      return;
+    }
+    const replace = e.target.closest('.img-slot-replace');
+    if (replace) {
+      if (pending) { showToast('Please wait for images to finish processing.', 'info'); return; }
+      replaceIndex = Number(replace.dataset.i);
+      replaceInput.value = '';
+      replaceInput.click();
+    }
+  });
+
+  replaceInput.addEventListener('change', async () => {
+    const file = replaceInput.files && replaceInput.files[0];
+    const index = replaceIndex;
+    replaceIndex = -1;
+    if (!file || index < 0 || index >= images.length) return;
+    pending++; render();
+    try {
+      const processed = await fileToSquareDataUrl(file);
+      if (images.some((s, i) => i !== index && s === processed)) {
+        showToast('That image has already been added.', 'info');
+      } else {
+        images[index] = processed;
+      }
+    } catch (err) {
+      showToast(err.message || 'Could not read that file.', 'error');
+    } finally {
+      pending--; render();
+    }
   });
 
   urlBtn.addEventListener('click', () => {
@@ -632,13 +720,17 @@ function createImageManager({ gridId, urlInputId, urlBtnId, fileInputId, countId
 
   fileInput.addEventListener('change', async e => {
     const files = Array.from(e.target.files || []);
-    const room = MAX_IMAGES - images.length;
-    if (files.length > room) showToast('Only ' + room + ' more image(s) can be added.', 'info');
-    for (const file of files.slice(0, Math.max(room, 0))) {
-      try { add(await fileToDataUrl(file)); }
-      catch (err) { showToast(err.message || 'Could not read that file.', 'error'); }
-    }
     e.target.value = '';
+    const room = MAX_IMAGES - images.length - pending;
+    if (files.length > room) showToast('Only ' + Math.max(room, 0) + ' more image(s) can be added.', 'info');
+    const accepted = files.slice(0, Math.max(room, 0));
+    pending += accepted.length; render();
+    // Sequential, so images keep the order they were picked in.
+    for (const file of accepted) {
+      try { add(await fileToSquareDataUrl(file)); }
+      catch (err) { showToast(err.message || 'Could not read that file.', 'error'); }
+      finally { pending--; render(); }
+    }
   });
 
   render();
@@ -646,7 +738,8 @@ function createImageManager({ gridId, urlInputId, urlBtnId, fileInputId, countId
   return {
     get: () => images.slice(),
     set: list => { images = (Array.isArray(list) ? list : []).filter(Boolean).slice(0, MAX_IMAGES); render(); },
-    clear: () => { images = []; render(); }
+    clear: () => { images = []; render(); },
+    isBusy: () => pending > 0
   };
 }
 
@@ -677,6 +770,7 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
   const bisHallmark = isGoldOrSilver && document.getElementById('pHallmark').value === 'true';
   const bisNumber = bisHallmark ? document.getElementById('pHallmarkNumber').value.trim() : '';
 
+  if (addImages.isBusy()) { showToast('Please wait for images to finish processing.', 'info'); return; }
   const images = addImages.get();
 
 
@@ -791,6 +885,7 @@ document.getElementById('editProductForm').addEventListener('submit', async e =>
   const btn = document.getElementById('editSaveBtn');
   err.classList.remove('show');
 
+  if (editImages.isBusy()) { showToast('Please wait for images to finish processing.', 'info'); return; }
   const images = editImages.get();
   const type = document.getElementById('eJewelryType').value;
   const isGoldOrSilver = type === 'Gold' || type === 'Silver';
