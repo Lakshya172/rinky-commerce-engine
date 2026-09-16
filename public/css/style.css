@@ -1798,7 +1798,7 @@ em {
 
 /* ── Admin ── */
 .admin-section {
-  padding: calc(var(--nav-h)+40px) 0 80px;
+  padding: calc(var(--nav-h) + 40px) 0 80px;
   background: var(--ivory);
   min-height: 100vh
 }
@@ -1978,7 +1978,7 @@ tbody tr:hover td {
 
 /* ── Wishlist ── */
 .wishlist-section {
-  padding: calc(var(--nav-h)+56px) 0 88px;
+  padding: calc(var(--nav-h) + 56px) 0 88px;
   background: var(--ivory);
   min-height: 80vh
 }
