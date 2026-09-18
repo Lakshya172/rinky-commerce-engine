@@ -10,7 +10,7 @@
 
 ## Overview
 
-**Rinky Commerce Engine** is a full-stack commerce platform designed and developed to provide Rinky Jewellers with a complete digital storefront and centralized product management system.
+**Rinky Commerce Engine** is a full-stack commerce platform designed and developed to provide Rinky Jewellers with a complete digital storefront and centralized product management system
 
 The application was engineered end-to-end, covering **frontend development, REST API design, authentication, authorization, database architecture, session management, transactional email workflows, security middleware, administrative operations, and cloud deployment**.
 
