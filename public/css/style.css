@@ -1350,6 +1350,19 @@ em {
   border: 1px solid rgba(39, 174, 96, .4)
 }
 
+/* ── Category names are always shown in capitals ──
+   Display only. The stored value keeps its original casing, so ?category=
+   links, filtering and API queries are untouched. Every customer-facing place
+   a category is labelled is listed here, so a category the admin adds later
+   is capitalised automatically without a code change. */
+.cat-card-name,
+.prod-cat,
+.detail-cat,
+.breadcrumb-cat,
+.filter-chip {
+  text-transform: uppercase
+}
+
 /* ── Product Detail ── */
 .breadcrumb {
   background: var(--dark);
@@ -2581,6 +2594,36 @@ html.lenis, html.lenis body {
   opacity: 1
 }
 
+/* ── Product video (detail page) ── */
+.detail-video {
+  margin-top: 18px
+}
+
+.detail-video-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  margin-bottom: 8px
+}
+
+.detail-video-label i {
+  margin-right: 6px
+}
+
+/* Square, like the product photos above it, so a portrait clip shot on a phone
+   and a landscape one both sit in the same frame without being cropped. */
+.detail-video video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--product-matte);
+  border-radius: var(--r);
+  box-shadow: var(--shadow)
+}
+
 /* ── Admin: multi-image manager ── */
 .img-manager-grid {
   display: grid;
@@ -2667,6 +2710,30 @@ html.lenis, html.lenis body {
   color: var(--text-muted);
   margin-left: 6px
 }
+
+/* ── Admin: optional product video ── */
+/* Explicit, so nothing later in the cascade can make the empty slot visible */
+.video-manager[hidden] { display: none }
+
+.video-slot {
+  position: relative;
+  max-width: 260px;
+  margin-bottom: 12px;
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--product-matte)
+}
+
+.video-slot video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--product-matte)
+}
+
+.video-slot .img-slot-remove { z-index: 2 }
 
 /* ── Admin: edit product modal ── */
 .admin-modal {
@@ -2823,6 +2890,9 @@ body.has-rate-bar .mobile-nav {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* Never overflow the page, however long a value turns out to be. The grid
+     layouts below take over long before this matters. */
+  flex-wrap: wrap;
 }
 
 .rate-item {
@@ -2920,9 +2990,29 @@ body.has-rate-bar .mobile-nav {
   .rate-item:last-child { padding-right: 0 }
 }
 
-/* Phones: a tidy two-by-two grid */
+/* Below about 1000px the five rates no longer fit on one line once the values
+   reach seven digits, so they move to a three-column grid of two rows. */
+@media (max-width: 1000px) {
+  body.has-rate-bar { --rate-bar-h: 95px }
+
+  .rate-bar-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px 18px;
+  }
+
+  .rate-item,
+  .rate-item:first-child,
+  .rate-item:last-child {
+    padding: 0;
+    justify-content: space-between;
+    border-left: none !important;
+  }
+}
+
+/* Phones: a tidy two-column grid */
 @media (max-width: 640px) {
-  body.has-rate-bar { --rate-bar-h: 104px }
+  body.has-rate-bar { --rate-bar-h: 142px }
 
   .rate-bar-inner {
     grid-template-columns: 1fr;

@@ -43,7 +43,7 @@
   <div class="container">
     <a href="/">Home</a><span>›</span>
     <a href="/products">Collection</a><span>›</span>
-    <span id="bc-cat"></span><span id="bc-sep" style="display:none">›</span>
+    <span id="bc-cat" class="breadcrumb-cat"></span><span id="bc-sep" style="display:none">›</span>
     <span id="bc-name" style="color:rgba(255,255,255,.75)">Loading...</span>
   </div>
 </div>
@@ -133,6 +133,17 @@
         ).join('') + `</div>`
       : '';
 
+    // Optional: shown only when this product actually has a video. The src is
+    // filled in after insertion, because it can be a multi-megabyte data URL.
+    const videoHTML = p.video
+      ? `<div class="detail-video">
+            <p class="detail-video-label"><i class="fas fa-circle-play"></i>Product Video</p>
+            <video id="pdVideo" controls preload="metadata" playsinline>
+              Your browser cannot play this video.
+            </video>
+          </div>`
+      : '';
+
     document.getElementById('detailContainer').innerHTML = `
       <div class="detail-grid">
         <div class="detail-gallery">
@@ -141,6 +152,7 @@
             ${p.featured ? '<span class="detail-badge">✦ Featured Piece</span>' : ''}
           </div>
           ${thumbsHTML}
+          ${videoHTML}
         </div>
         <div class="detail-info">
           <span class="detail-cat">${p.category}</span>
@@ -184,6 +196,15 @@
           </p>
         </div>
       </div>`;
+
+    // Assigned as properties rather than written into the markup: the values
+    // can be very large, and this way they never need HTML-escaping. Playback
+    // is always started by the visitor — the player never autoplays.
+    const videoEl = document.getElementById('pdVideo');
+    if (videoEl) {
+      videoEl.src = p.video;
+      videoEl.poster = mainImg;
+    }
 
     // Thumbnail switching
     const thumbWrap = document.getElementById('pdThumbs');

@@ -21,6 +21,21 @@ const productSchema = new mongoose.Schema({
       }
     ]
   },
+  // Optional showcase video, at most one per product. Held exactly like the
+  // images — a data URL from an upload, or a direct link — so the feature needs
+  // no new storage layer. Products saved before this field existed simply have
+  // no video and keep working untouched.
+  video: {
+    type: String,
+    default: '',
+    trim: true,
+    validate: {
+      // Shape only. Size and exact format are enforced where the value enters
+      // the system, in routes/admin.js.
+      validator: v => !v || /^data:video\/(mp4|webm|ogg);base64,/i.test(v) || /^https?:\/\//i.test(v),
+      message: 'Unsupported product video.'
+    }
+  },
   description: { type: String, trim: true, default: '' },
   material:    { type: String, default: '22K Gold' },
   weight:      { type: String, default: '' },

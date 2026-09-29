@@ -28,6 +28,62 @@ function normaliseGallery(body) {
   return { images: cleaned };
 }
 
+// ── Optional product video ──
+// At most one per product, kept exactly like the images: either a data URL
+// from an upload or a direct link. 4 MB of video becomes roughly 5.5 MB of
+// base64, which together with four images stays inside both the 10 mb JSON
+// body limit and MongoDB's 16 MB document limit.
+const MAX_VIDEO_BYTES = 4 * 1024 * 1024;
+const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
+const VIDEO_LINK_EXT = /\.(mp4|webm|ogg|ogv)$/i;
+
+// Returns { video } with the value to store, or { error }. An empty string is
+// a valid result: it means this product has no video.
+function normaliseVideo(raw) {
+  if (raw === undefined || raw === null) return { video: '' };
+  if (typeof raw !== 'string') return { error: 'Invalid product video.' };
+
+  const value = raw.trim();
+  if (!value) return { video: '' };
+
+  if (/^https?:\/\//i.test(value)) {
+    // Quotes and angle brackets would break out of the attribute the player is
+    // rendered into, and no legitimate video link needs them unencoded.
+    if (/["'<>\s]/.test(value)) {
+      return { error: 'That video link contains characters that are not allowed.' };
+    }
+    let url;
+    try { url = new URL(value); } catch { return { error: 'Enter a valid video link.' }; }
+    if (!VIDEO_LINK_EXT.test(url.pathname)) {
+      return { error: 'The link must point straight at an .mp4, .webm or .ogg file. Page links such as YouTube cannot be played here.' };
+    }
+    return { video: value };
+  }
+
+  const comma = value.indexOf(',');
+  const header = comma === -1 ? '' : value.slice(0, comma).toLowerCase();
+  if (!header.startsWith('data:') || !header.endsWith(';base64')) {
+    return { error: 'Unsupported video. Upload an MP4, WebM or OGG file, or paste a direct link to one.' };
+  }
+  if (!VIDEO_MIME_TYPES.includes(header.slice(5, -7))) {
+    return { error: 'Unsupported video format. Use MP4, WebM or OGG.' };
+  }
+
+  // The size is worked out from the base64 length before the contents are
+  // examined, so an oversized upload is rejected without scanning megabytes.
+  const body = value.slice(comma + 1);
+  const padding = body.endsWith('==') ? 2 : body.endsWith('=') ? 1 : 0;
+  const bytes = Math.floor(body.length * 3 / 4) - padding;
+  if (bytes > MAX_VIDEO_BYTES) {
+    return {
+      error: `That video is ${(bytes / (1024 * 1024)).toFixed(1)} MB. Please keep it under ${MAX_VIDEO_BYTES / (1024 * 1024)} MB.`
+    };
+  }
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(body)) return { error: 'That video file could not be read.' };
+
+  return { video: value };
+}
+
 // All admin routes require admin role
 router.use(requireAdmin);
 
@@ -66,10 +122,14 @@ router.post('/products', async (req, res) => {
     const gallery = normaliseGallery(req.body);
     if (gallery.error) return res.status(400).json({ success: false, message: gallery.error });
 
+    const video = normaliseVideo(req.body.video);
+    if (video.error) return res.status(400).json({ success: false, message: video.error });
+
     const product = await Product.create({
       name, price: Number(price), category, description, material, weight,
       image: gallery.images[0],
       images: gallery.images,
+      video: video.video,
       featured: featured === true || featured === 'true',
       inStock:  inStock  !== false && inStock  !== 'false',
       jewelryType: jewelryType || 'Gold',
@@ -99,6 +159,14 @@ router.put('/products/:id', async (req, res) => {
     const gallery = normaliseGallery(req.body);
     if (gallery.error) return res.status(400).json({ success: false, message: gallery.error });
 
+    // A body with no `video` key at all leaves the existing video untouched;
+    // sending an empty string is how the admin portal removes one.
+    let video = null;
+    if (Object.prototype.hasOwnProperty.call(req.body, 'video')) {
+      video = normaliseVideo(req.body.video);
+      if (video.error) return res.status(400).json({ success: false, message: video.error });
+    }
+
     product.name        = name;
     product.price       = Number(price);
     product.category    = category;
@@ -112,6 +180,7 @@ router.put('/products/:id', async (req, res) => {
     product.jewelryType = jewelryType || 'Gold';
     product.bisHallmark = bisHallmark === true || bisHallmark === 'true';
     product.bisNumber   = product.bisHallmark ? (bisNumber || '') : '';
+    if (video) product.video = video.video;
 
     await product.save();
     res.json({ success: true, product });
@@ -148,8 +217,8 @@ router.patch('/products/:id/featured', async (req, res) => {
 });
 
 // PUT update the current Gold & Silver rates
-// Protected by router.use(requireAdmin) above. Only the four rate fields are
-// read from the body; the timestamp is always generated on the server.
+// Protected by router.use(requireAdmin) above. Only the rate fields themselves
+// are read from the body; the timestamp is always generated on the server.
 router.put('/rates', async (req, res) => {
   try {
     const { values, errors, message } = validateRates(req.body);

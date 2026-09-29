@@ -21,6 +21,7 @@ const ratesSchema = new mongoose.Schema({
   gold24:      positiveRate,   // ₹ per 10 g, 24 KT, excluding GST
   gold22:      positiveRate,   // ₹ per 10 g, 22 KT, excluding GST
   gold20:      positiveRate,   // ₹ per 10 g, 20 KT, excluding GST
+  gold18:      positiveRate,   // ₹ per 10 g, 18 KT, excluding GST
   silver:      positiveRate,   // ₹ per kg, excluding GST
   // Always generated on the server at the moment of a successful update.
   lastUpdated: { type: Date, required: true },

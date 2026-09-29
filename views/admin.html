@@ -161,6 +161,21 @@
               At least 1 image, up to 4. The first image is the main photo shown on cards and search results.
             </p>
           </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label dark">Product Video <span class="img-count" id="addVideoCount">Optional</span></label>
+            <div class="video-manager" id="addVideoSlot" hidden></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <input class="form-input light" id="addVideoUrl" type="url" placeholder="Paste a direct video link (https://....mp4)" style="flex:1;min-width:200px" />
+              <button type="button" class="btn btn-sm btn-outline" id="addVideoUrlBtn">Add link</button>
+              <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0" id="addVideoFileLabel">
+                <i class="fas fa-video"></i> Upload
+                <input type="file" id="addVideoFile" accept="video/mp4,video/webm,video/ogg" hidden />
+              </label>
+            </div>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:6px">
+              Optional. One video per product — MP4, WebM or OGG, up to 4 MB. It is shown on the product page, not on the product cards.
+            </p>
+          </div>
           <div class="form-group">
             <label class="form-label dark">Description</label>
             <textarea class="form-input light" id="pDesc" rows="3" placeholder="Describe this beautiful piece..." style="resize:vertical"></textarea>
@@ -220,6 +235,17 @@
               <small class="rate-preview" id="rGold20Preview" data-unit="10g" aria-live="polite"></small>
               <small class="rate-field-error" id="rGold20Err"></small>
             </div>
+            <div class="form-group">
+              <label class="form-label dark" for="rGold18">18 KT Gold <span style="font-weight:500;text-transform:none;letter-spacing:0">(₹ per 10 g)</span> *</label>
+              <div class="rate-input-wrap">
+                <span class="rate-currency" aria-hidden="true">₹</span>
+                <input class="form-input light" id="rGold18" name="gold18" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter rate per 10 g" aria-describedby="rGold18Preview rGold18Err" />
+              </div>
+              <small class="rate-preview" id="rGold18Preview" data-unit="10g" aria-live="polite"></small>
+              <small class="rate-field-error" id="rGold18Err"></small>
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label dark" for="rSilver">Silver <span style="font-weight:500;text-transform:none;letter-spacing:0">(₹ per kg)</span> *</label>
               <div class="rate-input-wrap">
@@ -342,6 +368,21 @@
               <input type="file" id="editImgFile" accept="image/*" multiple hidden />
             </label>
           </div>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label dark">Product Video <span class="img-count" id="editVideoCount">Optional</span></label>
+          <div class="video-manager" id="editVideoSlot" hidden></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input class="form-input light" id="editVideoUrl" type="url" placeholder="Paste a direct video link (https://....mp4)" style="flex:1;min-width:200px" />
+            <button type="button" class="btn btn-sm btn-outline" id="editVideoUrlBtn">Add link</button>
+            <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0" id="editVideoFileLabel">
+              <i class="fas fa-video"></i> Upload
+              <input type="file" id="editVideoFile" accept="video/mp4,video/webm,video/ogg" hidden />
+            </label>
+          </div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">
+            Optional. Upload or paste a link to replace the current video, or remove it with the × on the preview.
+          </p>
         </div>
         <div class="form-group" style="margin-bottom:18px">
           <label class="form-label dark">Description</label>
@@ -753,6 +794,150 @@ const editImages = createImageManager({
   fileInputId: 'editImgFile', countId: 'editImgCount'
 });
 
+// ── Product Video Manager (optional, at most one) ──
+// Separate from the image manager on purpose: a video is optional, there is
+// never more than one, and it is stored exactly as uploaded rather than being
+// re-encoded — a browser cannot re-compress video the way it can an image.
+// 4 MB keeps a product with four images comfortably inside the server's 10 mb
+// JSON body limit. The server enforces the same rules again.
+const MAX_VIDEO_BYTES = 4 * 1024 * 1024;
+const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
+const VIDEO_LINK_EXT = /\.(mp4|webm|ogg|ogv)$/i;
+
+function mb(bytes) { return (bytes / (1024 * 1024)).toFixed(1); }
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Could not read ' + file.name + '.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// Returns '' when the file is acceptable, otherwise the reason it is not.
+function checkVideoFile(file) {
+  const type = (file.type || '').toLowerCase();
+  // Some systems report no type at all for .ogg / .ogv, so fall back to the
+  // file name rather than rejecting a file the browser can actually play.
+  const ok = type ? VIDEO_TYPES.includes(type) : VIDEO_LINK_EXT.test(file.name || '');
+  if (!ok) return 'Unsupported video format. Use MP4, WebM or OGG.';
+  if (file.size > MAX_VIDEO_BYTES) {
+    return 'That video is ' + mb(file.size) + ' MB. Please keep it under ' + mb(MAX_VIDEO_BYTES) + ' MB.';
+  }
+  return '';
+}
+
+function createVideoManager({ slotId, urlInputId, urlBtnId, fileInputId, countId }) {
+  let video = '';
+  let busy = false;
+  let player = null;
+  const slot = document.getElementById(slotId);
+  const urlInput = document.getElementById(urlInputId);
+  const urlBtn = document.getElementById(urlBtnId);
+  const fileInput = document.getElementById(fileInputId);
+  const count = document.getElementById(countId);
+
+  function render() {
+    // Stop and detach the outgoing player, so a removed or replaced video is
+    // not left buffering in the background.
+    if (player) {
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
+      player = null;
+    }
+    slot.innerHTML = '';
+    slot.hidden = !video;
+
+    if (video) {
+      const wrap = document.createElement('div');
+      wrap.className = 'video-slot';
+      player = document.createElement('video');
+      player.controls = true;
+      player.preload = 'metadata';
+      player.playsInline = true;
+      // The value can be several megabytes, so it is assigned as a property
+      // rather than interpolated into markup.
+      player.src = video;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'img-slot-remove';
+      remove.title = 'Remove video';
+      remove.setAttribute('aria-label', 'Remove video');
+      remove.innerHTML = '&times;';
+      remove.addEventListener('click', () => { video = ''; render(); });
+      wrap.appendChild(player);
+      wrap.appendChild(remove);
+      slot.appendChild(wrap);
+    }
+
+    count.textContent = busy ? 'Reading…' : (video ? 'Added' : 'Optional');
+    urlInput.disabled = busy;
+    urlBtn.disabled = busy;
+    fileInput.disabled = busy;
+    urlInput.placeholder = video
+      ? 'Paste a link to replace the video'
+      : 'Paste a direct video link (https://....mp4)';
+  }
+
+  urlBtn.addEventListener('click', () => {
+    const val = urlInput.value.trim();
+    if (!val) return;
+    if (!/^https?:\/\//i.test(val)) { showToast('Enter a link starting with http:// or https://', 'error'); return; }
+    let parsed;
+    try { parsed = new URL(val); } catch { showToast('That does not look like a valid link.', 'error'); return; }
+    if (!VIDEO_LINK_EXT.test(parsed.pathname)) {
+      showToast('The link must point straight at an .mp4, .webm or .ogg file.', 'error');
+      return;
+    }
+    video = val;
+    urlInput.value = '';
+    render();
+  });
+
+  urlInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); urlBtn.click(); }
+  });
+
+  // Uploading or pasting a link while a video is already set replaces it.
+  fileInput.addEventListener('change', async e => {
+    const file = (e.target.files || [])[0];
+    e.target.value = '';
+    if (!file) return;
+    const problem = checkVideoFile(file);
+    if (problem) { showToast(problem, 'error'); return; }
+
+    busy = true; render();
+    try {
+      video = await readFileAsDataUrl(file);
+    } catch (err) {
+      showToast(err.message || 'Could not read that file.', 'error');
+    } finally {
+      busy = false; render();
+    }
+  });
+
+  render();
+
+  return {
+    get: () => video,
+    set: src => { video = typeof src === 'string' ? src : ''; render(); },
+    clear: () => { video = ''; render(); },
+    isBusy: () => busy
+  };
+}
+
+const addVideo = createVideoManager({
+  slotId: 'addVideoSlot', urlInputId: 'addVideoUrl', urlBtnId: 'addVideoUrlBtn',
+  fileInputId: 'addVideoFile', countId: 'addVideoCount'
+});
+
+const editVideo = createVideoManager({
+  slotId: 'editVideoSlot', urlInputId: 'editVideoUrl', urlBtnId: 'editVideoUrlBtn',
+  fileInputId: 'editVideoFile', countId: 'editVideoCount'
+});
+
 document.getElementById('addProductForm').addEventListener('submit', async e => {
   e.preventDefault();
   const succ = document.getElementById('addSuccess');
@@ -771,6 +956,7 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
   const bisNumber = bisHallmark ? document.getElementById('pHallmarkNumber').value.trim() : '';
 
   if (addImages.isBusy()) { showToast('Please wait for images to finish processing.', 'info'); return; }
+  if (addVideo.isBusy()) { showToast('Please wait for the video to finish uploading.', 'info'); return; }
   const images = addImages.get();
 
 
@@ -782,6 +968,7 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
     bisHallmark: bisHallmark,
     bisNumber:   bisNumber,
     images:      images,
+    video:       addVideo.get(),
     description: document.getElementById('pDesc').value.trim(),
     material:    document.getElementById('pMaterial').value.trim(),
     weight:      document.getElementById('pWeight').value.trim(),
@@ -813,6 +1000,7 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
       document.getElementById('hallmarkRow').style.display = 'flex';
       document.getElementById('hallmarkNumberGroup').style.display = 'block';
       addImages.clear();
+      addVideo.clear();
       loadProducts(); loadStats();
       showToast('Product added!', 'success');
     } else { showA(err, d.message); }
@@ -848,6 +1036,7 @@ function openEditProduct(id) {
   const gallery = (Array.isArray(p.gallery) && p.gallery.length) ? p.gallery
     : (Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []));
   editImages.set(gallery);
+  editVideo.set(p.video || '');
 
   // Offer the categories that already exist, while still allowing a new one.
   const cats = [...new Set(productCache.map(x => x.category).filter(Boolean))].sort();
@@ -886,6 +1075,7 @@ document.getElementById('editProductForm').addEventListener('submit', async e =>
   err.classList.remove('show');
 
   if (editImages.isBusy()) { showToast('Please wait for images to finish processing.', 'info'); return; }
+  if (editVideo.isBusy()) { showToast('Please wait for the video to finish uploading.', 'info'); return; }
   const images = editImages.get();
   const type = document.getElementById('eJewelryType').value;
   const isGoldOrSilver = type === 'Gold' || type === 'Silver';
@@ -899,6 +1089,7 @@ document.getElementById('editProductForm').addEventListener('submit', async e =>
     bisHallmark: bisHallmark,
     bisNumber:   bisHallmark ? document.getElementById('eHallmarkNumber').value.trim() : '',
     images:      images,
+    video:       editVideo.get(),
     description: document.getElementById('eDesc').value.trim(),
     material:    document.getElementById('eMaterial').value.trim(),
     weight:      document.getElementById('eWeight').value.trim(),
@@ -930,13 +1121,14 @@ document.getElementById('editProductForm').addEventListener('submit', async e =>
 });
 
 // ── Gold & Silver Rates ──
-// Only the four rate values are ever sent. The timestamp is never sent and
+// Only the rate values below are ever sent. The timestamp is never sent and
 // never editable: the server generates it on each successful save, and it is
 // not touched by opening this tab, editing fields or refreshing the page.
 const RATE_INPUTS = [
   { key: 'gold24', id: 'rGold24', label: '24 KT gold rate' },
   { key: 'gold22', id: 'rGold22', label: '22 KT gold rate' },
   { key: 'gold20', id: 'rGold20', label: '20 KT gold rate' },
+  { key: 'gold18', id: 'rGold18', label: '18 KT gold rate' },
   { key: 'silver', id: 'rSilver', label: 'Silver rate' }
 ];
 const RATE_MAX = 10000000;
