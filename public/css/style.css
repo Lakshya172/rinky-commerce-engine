@@ -2841,15 +2841,20 @@ body.has-rate-bar .mobile-nav {
 }
 
 .rate-bar-inner {
-  max-width: 1260px;
+  /* Wide enough that the title, all five rates and the timestamp share one
+     line on a desktop screen. The old 1260px cap was narrower than the rates
+     themselves once values reached seven digits. */
+  max-width: 1520px;
   margin: 0 auto;
   padding: 0 28px;
   min-height: 46px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  /* minmax(0, 1fr), not 1fr: a plain 1fr track may not shrink below its
+     content, which would push the bar wider than the page. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas: "title list updated";
   align-items: center;
-  column-gap: 28px;
+  column-gap: 24px;
 }
 
 /* Lets the title and timestamp sit in their own grid cells */
@@ -2888,20 +2893,26 @@ body.has-rate-bar .mobile-nav {
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
   align-items: center;
-  /* Never overflow the page, however long a value turns out to be. The grid
-     layouts below take over long before this matters. */
-  flex-wrap: wrap;
+  /* Never wrap. Silver belongs on the same line as the gold purities, so when
+     the five no longer fit the media queries below switch to a deliberate
+     grid instead of letting the last item drop on its own. */
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  min-width: 0;
 }
 
 .rate-item {
   display: flex;
   align-items: baseline;
   gap: 9px;
-  padding: 0 20px;
+  padding: 0 14px;
   white-space: nowrap;
 }
+
+/* Flush to the track edges so the row spans the full width evenly */
+.rate-bar-list > .rate-item:first-child { padding-left: 0 }
+.rate-bar-list > .rate-item:last-child { padding-right: 0 }
 
 .rate-item + .rate-item {
   border-left: 1px solid rgba(251, 248, 242, .12)
@@ -2970,9 +2981,12 @@ body.has-rate-bar .mobile-nav {
   .rate-value.is-loading { animation: none }
 }
 
-/* Tablet and small laptop: title + timestamp on top, rates spread below */
-@media (max-width: 1199px) {
-  body.has-rate-bar { --rate-bar-h: 72px }
+/* Laptop and below: five seven-digit rates plus the title and the long
+   "Updated on 26 Sep 2026, 3:27 PM" form need about 1440px to share one line.
+   Below that the title and timestamp take their own line so the rates keep a
+   full-width row to themselves, still side by side with dividers. */
+@media (max-width: 1439px) {
+  body.has-rate-bar { --rate-bar-h: 67px }
 
   .rate-bar-inner {
     grid-template-columns: 1fr auto;
@@ -2984,15 +2998,13 @@ body.has-rate-bar .mobile-nav {
     padding-bottom: 10px;
   }
 
-  .rate-bar-list { justify-content: space-between }
   .rate-item { padding: 0 14px }
-  .rate-item:first-child { padding-left: 0 }
-  .rate-item:last-child { padding-right: 0 }
 }
 
-/* Below about 1000px the five rates no longer fit on one line once the values
-   reach seven digits, so they move to a three-column grid of two rows. */
-@media (max-width: 1000px) {
+/* Below about 1000px five seven-digit rates no longer fit on one line, so they
+   move to a three-column grid: gold on the first row, the rest on the second.
+   A deliberate grid, rather than letting the last item wrap on its own. */
+@media (max-width: 999px) {
   body.has-rate-bar { --rate-bar-h: 95px }
 
   .rate-bar-list {
@@ -3002,12 +3014,16 @@ body.has-rate-bar .mobile-nav {
   }
 
   .rate-item,
-  .rate-item:first-child,
-  .rate-item:last-child {
+  .rate-bar-list > .rate-item:first-child,
+  .rate-bar-list > .rate-item:last-child {
     padding: 0;
     justify-content: space-between;
     border-left: none !important;
   }
+
+  /* Gold fills the first row, so silver takes the rest of the second rather
+     than sitting in a single cell with an empty one beside it. */
+  .rate-item-silver { grid-column: 2 / -1 }
 }
 
 /* Phones: a tidy two-column grid */
@@ -3039,6 +3055,10 @@ body.has-rate-bar .mobile-nav {
     justify-content: space-between;
     border-left: none !important;
   }
+
+  /* Five items in two columns would leave silver orphaned in a half-width
+     cell, so it takes the full width of the last row on purpose. */
+  .rate-item-silver { grid-column: 1 / -1 }
 
   .rate-value { font-size: 12.5px }
   .rate-value.is-loading { width: 72px }
