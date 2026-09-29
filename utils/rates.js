@@ -11,6 +11,7 @@ const RATE_FIELDS = [
   { key: 'gold24', label: '24 KT gold rate' },
   { key: 'gold22', label: '22 KT gold rate' },
   { key: 'gold20', label: '20 KT gold rate' },
+  { key: 'gold18', label: '18 KT gold rate' },
   { key: 'silver', label: 'Silver rate' }
 ];
 
@@ -50,8 +51,9 @@ function parseRate(raw, label) {
   return { value };
 }
 
-// Validates only the four rate fields. Anything else in the payload —
-// including any client-supplied `lastUpdated` — is deliberately ignored.
+// Validates only the rate fields listed in RATE_FIELDS. Anything else in the
+// payload — including any client-supplied `lastUpdated` — is deliberately
+// ignored.
 function validateRates(body) {
   const values = {};
   const errors = {};
@@ -75,6 +77,7 @@ function toPublic(doc) {
     gold24: doc.gold24,
     gold22: doc.gold22,
     gold20: doc.gold20,
+    gold18: doc.gold18,
     silver: doc.silver,
     lastUpdated: doc.lastUpdated
   };
@@ -112,6 +115,7 @@ async function setCurrentRates(values, { source = 'manual' } = {}) {
       gold24: values.gold24,
       gold22: values.gold22,
       gold20: values.gold20,
+      gold18: values.gold18,
       silver: values.silver,
       // Server clock only. Never taken from the request.
       lastUpdated: new Date(),
