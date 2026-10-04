@@ -101,9 +101,18 @@ currentCat = urlCat;
     } catch {}
   }
 
-  // Products
-  const res  = await fetch('/api/products');
-  const data = await res.json();
+  // Products. A failed request must not look like an empty catalogue: without
+  // this check a 500 fell through to `|| []` and the page said "No pieces
+  // found", which hid a real outage behind a normal-looking empty state.
+  let data;
+  try {
+    const res = await fetch('/api/products');
+    data = await res.json();
+    if (!res.ok || !data || !data.success) throw new Error('Request failed');
+  } catch {
+    showLoadError();
+    return;
+  }
   allProducts = data.products || [];
 
   // Generate category filter chips dynamically
@@ -131,6 +140,21 @@ currentCat = urlCat;
 
   render();
 })();
+
+// Shown when the catalogue could not be loaded at all, so a server problem
+// reads as a server problem rather than as "we have nothing to sell".
+function showLoadError() {
+  const count = document.getElementById('results-count');
+  if (count) count.textContent = '';
+  const grid = document.getElementById('productGrid');
+  if (!grid) return;
+  grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 0">
+    <i class="fas fa-triangle-exclamation" style="font-size:48px;color:var(--gold);opacity:.35;display:block;margin-bottom:16px"></i>
+    <h3 style="font-family:var(--ff-display);font-size:28px;margin-bottom:8px">We couldn't load the collection</h3>
+    <p style="color:var(--text-muted);margin-bottom:18px">Something went wrong at our end. Please try again in a moment.</p>
+    <button class="btn btn-gold" onclick="window.location.reload()">Try again</button>
+  </div>`;
+}
 
 function render() {
   const grid  = document.getElementById('productGrid');

@@ -73,6 +73,14 @@ productSchema.virtual('gallery').get(function () {
   return this.image ? [this.image] : [];
 });
 
+// The catalogue and the admin list both sort by newest first. Without this
+// index that sort is a blocking in-memory sort holding whole documents, and
+// MongoDB aborts it once the buffered documents pass 32 MiB. Because images
+// are stored as base64 data URLs, a few dozen products are enough to reach
+// that limit, which took the public product list down entirely. With the
+// index the sort is served in index order and nothing is buffered.
+productSchema.index({ createdAt: -1 });
+
 productSchema.set('toJSON', { virtuals: true });
 productSchema.set('toObject', { virtuals: true });
 
