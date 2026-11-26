@@ -105,10 +105,37 @@ router.get('/stats', async (req, res) => {
 // GET all products (admin)
 router.get('/products', async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $project: {
+        name: 1, image: 1, category: 1, price: 1, material: { $ifNull: ['$material', '22K Gold'] }, jewelryType: 1,
+        bisNumber: 1, bisHallmark: { $ifNull: ['$bisHallmark', false] },
+        featured: 1, inStock: { $ifNull: ['$inStock', true] },
+        imageCount: { $size: { $ifNull: ['$images', []] } }
+      } }
+    ]);
     res.json({ success: true, products });
   } catch {
     res.status(500).json({ success: false, message: 'Failed to load products.' });
+  }
+});
+
+router.get('/categories', async (req, res) => {
+  try {
+    const categories = await Product.distinct('category');
+    res.json({ success: true, categories });
+  } catch {
+    res.status(500).json({ success: false, message: 'Failed to load categories.' });
+  }
+});
+
+router.get('/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
+    res.json({ success: true, product: product.toObject({ virtuals: false }) });
+  } catch {
+    res.status(500).json({ success: false, message: 'Failed to load product.' });
   }
 });
 

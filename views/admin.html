@@ -446,25 +446,40 @@ async function loadStats() {
 }
 
 // ── Category Dropdown Helper ──
-function populateCategoryDropdown(products) {
-  const select = document.getElementById('pCategory');
-  const currentVal = select.value;
-  
-  const defaultCats = ['Necklaces', 'Rings', 'Earrings', 'Bangles'];
-  const productCats = products ? products.map(p => p.category) : [];
-  const allCats = [...new Set([...defaultCats, ...productCats])].filter(Boolean);
-  
-  select.innerHTML = '<option value="">Select Category</option>' +
-    allCats.map(cat => `<option value="${cat}">${cat}</option>`).join('') +
-    '<option value="new">+ Add New Category</option>';
-    
-  if (allCats.includes(currentVal) || currentVal === 'new') {
-    select.value = currentVal;
+let categoryRequest = 0;
+async function loadCategories() {
+  const request = ++categoryRequest;
+  try {
+    const response = await fetch('/api/admin/categories');
+    const data = await response.json();
+    if (!response.ok || !data.success) throw new Error();
+    if (request !== categoryRequest) return;
+
+    const select = document.getElementById('pCategory');
+    const current = select.value;
+    const categories = new Map();
+    for (const value of ['Necklaces', 'Rings', 'Earrings', 'Bangles', ...data.categories]) {
+      if (typeof value !== 'string' || !value.trim()) continue;
+      const key = value.trim().toLowerCase();
+      if (!categories.has(key)) categories.set(key, value);
+    }
+    const suggestions = document.getElementById('eCategoryList');
+    suggestions.replaceChildren();
+    select.replaceChildren(new Option('Select Category', ''));
+    for (const value of categories.values()) {
+      select.add(new Option(value, value));
+      suggestions.appendChild(new Option(value, value));
+    }
+    select.add(new Option('+ Add New Category', 'new'));
+    select.value = current === 'new' ? current : categories.get(current.trim().toLowerCase()) || '';
+  } catch {
+    if (request === categoryRequest) showToast('Could not load product categories.', 'error');
   }
 }
 
 // ── Products ──
 async function loadProducts() {
+  loadCategories();
   const tbody = document.getElementById('productsTbody');
   tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">Loading...</td></tr>';
   try {
@@ -472,9 +487,6 @@ async function loadProducts() {
     const d = await r.json();
     if (!d.success) throw new Error(d.message || 'Server error');
     
-    // Dynamically populate category select options
-    productCache = d.products || [];
-    populateCategoryDropdown(d.products);
     
     if (!d.products || !d.products.length) {
       tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">No products yet. Use "Add Product" tab or seed sample data.</td></tr>';
@@ -490,7 +502,7 @@ async function loadProducts() {
         <tr>
           <td>
             <img src="${p.image}" alt="${p.name}" class="tbl-img" />
-            ${(p.gallery && p.gallery.length > 1) ? `<span class="img-count">${p.gallery.length} pics</span>` : ''}
+            ${(p.imageCount > 1) ? `<span class="img-count">${p.imageCount} pics</span>` : ''}
           </td>
           <td><strong>${p.name}</strong></td>
           <td><span class="cat-chip">${p.category}</span></td>
@@ -1010,13 +1022,21 @@ document.getElementById('addProductForm').addEventListener('submit', async e => 
 });
 
 // ── Edit Product ──
-// Products are already in memory from the last loadProducts() call, so the
-// modal opens without another round trip.
-let productCache = [];
-
-function openEditProduct(id) {
-  const p = productCache.find(x => x._id === id);
-  if (!p) { showToast('Could not find that product. Refresh and try again.', 'error'); return; }
+let editRequest = 0;
+async function openEditProduct(id) {
+  closeEditProduct();
+  const request = editRequest;
+  let p;
+  try {
+    const response = await fetch('/api/admin/products/' + encodeURIComponent(id));
+    const data = await response.json();
+    if (!response.ok || !data.success || data.product?._id !== id || !data.product.image) throw new Error();
+    p = data.product;
+  } catch {
+    if (request === editRequest) showToast('Could not load that product. Refresh and try again.', 'error');
+    return;
+  }
+  if (request !== editRequest) return;
 
   document.getElementById('editError').classList.remove('show');
   document.getElementById('eId').value = p._id;
@@ -1038,16 +1058,14 @@ function openEditProduct(id) {
   editImages.set(gallery);
   editVideo.set(p.video || '');
 
-  // Offer the categories that already exist, while still allowing a new one.
-  const cats = [...new Set(productCache.map(x => x.category).filter(Boolean))].sort();
-  document.getElementById('eCategoryList').innerHTML = cats.map(c => '<option value="' + c + '"></option>').join('');
-
   toggleEditHallmark();
   document.getElementById('editModal').hidden = false;
   document.body.style.overflow = 'hidden';
 }
 
 function closeEditProduct() {
+  editRequest++;
+  document.getElementById('eId').value = '';
   document.getElementById('editModal').hidden = true;
   document.body.style.overflow = '';
 }
@@ -1070,6 +1088,7 @@ document.addEventListener('keydown', e => {
 
 document.getElementById('editProductForm').addEventListener('submit', async e => {
   e.preventDefault();
+  if (document.getElementById('editModal').hidden || !document.getElementById('eId').value) return;
   const err = document.getElementById('editError');
   const btn = document.getElementById('editSaveBtn');
   err.classList.remove('show');
