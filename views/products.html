@@ -58,11 +58,11 @@
 
     <!-- Filters -->
     <div class="filter-bar" id="filterBar">
-      <button class="filter-chip active" data-cat="">All</button>
-      <button class="filter-chip" data-cat="Necklaces">📿 Necklaces</button>
-      <button class="filter-chip" data-cat="Rings">💍 Rings</button>
-      <button class="filter-chip" data-cat="Earrings">✨ Earrings</button>
-      <button class="filter-chip" data-cat="Bangles">🌟 Bangles</button>
+      <button class="filter-chip active" data-cat="">ALL</button>
+      <button class="filter-chip" data-cat="necklaces">NECKLACES</button>
+      <button class="filter-chip" data-cat="rings">RINGS</button>
+      <button class="filter-chip" data-cat="earrings">EARRINGS</button>
+      <button class="filter-chip" data-cat="bangles">BANGLES</button>
     </div>
 
     <p id="results-count" class="results-count"></p>
@@ -86,9 +86,16 @@ let wishlist    = [];
 let currentCat  = '';
 let searchTerm  = '';
 
+// Normalize a category for comparison without changing the stored product.
+function categoryKey(value) {
+  return (value || '')
+    .replace(/[#*0-9]\uFE0F?\u20E3|(?:\p{Extended_Pictographic}|\p{Regional_Indicator}|\p{Emoji_Modifier})(?:[\uFE0E\uFE0F\p{Emoji_Modifier}\u{E0020}-\u{E007F}]|\u200D\p{Extended_Pictographic})*/gu, '')
+    .trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
 // Pre-select from URL
 const urlCat = new URLSearchParams(window.location.search).get('category') || '';
-currentCat = urlCat;
+currentCat = categoryKey(urlCat);
 
 (async () => {
   // Wishlist
@@ -116,21 +123,17 @@ currentCat = urlCat;
   allProducts = data.products || [];
 
   // Generate category filter chips dynamically
-  const defaultCats = ['Necklaces', 'Rings', 'Earrings', 'Bangles'];
-  const productCats = allProducts.map(p => p.category);
-  const categories = [...new Set([...defaultCats, ...productCats])].filter(Boolean);
-  
   const filterBar = document.getElementById('filterBar');
-  if (filterBar) {
-    filterBar.innerHTML = `<button class="filter-chip active" data-cat="">All</button>` +
-      categories.map(cat => {
-        let icon = '💎';
-        if (cat === 'Necklaces') icon = '📿';
-        else if (cat === 'Rings') icon = '💍';
-        else if (cat === 'Earrings') icon = '✨';
-        else if (cat === 'Bangles') icon = '🌟';
-        return `<button class="filter-chip" data-cat="${cat}">${icon} ${cat}</button>`;
-      }).join('');
+  const categoryKeys = new Set(Array.from(filterBar.children, chip => chip.dataset.cat));
+  for (const product of allProducts) {
+    const key = categoryKey(product.category);
+    if (!key || categoryKeys.has(key)) continue;
+    categoryKeys.add(key);
+    const chip = document.createElement('button');
+    chip.className = 'filter-chip';
+    chip.dataset.cat = key;
+    chip.textContent = key.toUpperCase();
+    filterBar.appendChild(chip);
   }
 
   // Set active filter
@@ -160,8 +163,13 @@ function render() {
   const grid  = document.getElementById('productGrid');
   const count = document.getElementById('results-count');
   let filtered = allProducts;
-  if (currentCat) filtered = filtered.filter(p => p.category === currentCat);
-  if (searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  if (currentCat) filtered = filtered.filter(p => categoryKey(p.category) === currentCat);
+  if (searchTerm) {
+    const nameQuery = searchTerm.toLowerCase();
+    const categoryQuery = categoryKey(searchTerm);
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(nameQuery) ||
+      (categoryQuery && categoryKey(p.category) === categoryQuery));
+  }
 
   const noun = currentCat || 'all';
   count.textContent = `Showing ${filtered.length} ${noun} piece${filtered.length !== 1 ? 's' : ''}`;
@@ -192,7 +200,7 @@ document.getElementById('filterBar').addEventListener('click', e => {
 let _st;
 document.getElementById('searchInput').addEventListener('input', e => {
   clearTimeout(_st);
-  _st = setTimeout(() => { searchTerm = e.target.value; render(); }, 280);
+  _st = setTimeout(() => { searchTerm = e.target.value.trim(); render(); }, 280);
 });
 </script>
 </body>
